@@ -2,37 +2,58 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fuzzyMatch } from "@/lib/fuzzyMatch";
-import { GuestGroup } from "@/lib/types";
+import { searchGuestsAction } from "@/lib/actions/guests";
+import { GroupPublicData } from "./RSVPPageClient";
 import Input from "@/components/ui/Input";
 
 interface GuestSearchProps {
-  onSelect: (group: GuestGroup) => void;
+  weddingId: string;
+  onSelect: (group: GroupPublicData) => void;
 }
 
-export default function GuestSearch({ onSelect }: GuestSearchProps) {
+export default function GuestSearch({ weddingId, onSelect }: GuestSearchProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<GuestGroup[]>([]);
+  const [results, setResults] = useState<GroupPublicData[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!query.trim()) {
+    if (!query.trim() || query.trim().length < 2) {
       setResults([]);
       setOpen(false);
       return;
     }
-    debounceRef.current = setTimeout(() => {
-      const matches = fuzzyMatch(query);
-      setResults(matches);
-      setOpen(true);
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const groups = await searchGuestsAction(query, weddingId);
+        const mapped: GroupPublicData[] = groups.map((g) => ({
+          id: g.id,
+          groupName: g.groupName,
+          hasPlusOne: g.hasPlusOne,
+          plusOneNameIfKnown: g.plusOneNameIfKnown ?? undefined,
+          hasExistingResponse: !!g.rsvpResponse,
+          guests: g.guests.map((guest) => ({
+            id: guest.id,
+            firstName: guest.firstName,
+            lastName: guest.lastName,
+            isPlusOne: guest.isPlusOne,
+          })),
+          allowedEventKeys: g.allowedEvents.map((ae) => ae.event.key),
+        }));
+        setResults(mapped);
+        setOpen(true);
+      } finally {
+        setLoading(false);
+      }
     }, 300);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [query, weddingId]);
 
   // Close on outside click
   useEffect(() => {
@@ -45,7 +66,7 @@ export default function GuestSearch({ onSelect }: GuestSearchProps) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  function handleSelect(group: GuestGroup) {
+  function handleSelect(group: GroupPublicData) {
     setQuery("");
     setOpen(false);
     setResults([]);
@@ -72,7 +93,11 @@ export default function GuestSearch({ onSelect }: GuestSearchProps) {
             transition={{ duration: 0.15 }}
             className="absolute z-20 left-0 right-0 mt-1 bg-white border border-navy/10 shadow-lg shadow-navy/5 overflow-hidden"
           >
-            {results.length > 0 ? (
+            {loading ? (
+              <li className="px-5 py-5 text-center">
+                <p className="text-sm font-serif text-navy/40">Searching…</p>
+              </li>
+            ) : results.length > 0 ? (
               results.map((group) => (
                 <li key={group.id}>
                   <button

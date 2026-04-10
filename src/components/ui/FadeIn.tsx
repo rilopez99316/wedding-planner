@@ -39,8 +39,8 @@ export default function FadeIn({
       y: 0,
       transition: {
         type: "spring",
-        stiffness: 60,
-        damping: 20,
+        stiffness: 180,
+        damping: 28,
         delay,
       },
     },

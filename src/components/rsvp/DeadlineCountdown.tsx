@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { weddingConfig } from "@/config/wedding-config";
+import Link from "next/link";
 
 interface TimeLeft {
   days: number;
@@ -11,12 +11,17 @@ interface TimeLeft {
   seconds: number;
 }
 
-function getTimeLeft(): TimeLeft | null {
-  const diff = weddingConfig.date.rsvpDeadline.getTime() - Date.now();
+interface DeadlineCountdownProps {
+  rsvpDeadline: Date | string;
+  rsvpHref?: string;
+}
+
+function getTimeLeft(deadline: Date): TimeLeft | null {
+  const diff = new Date(deadline).getTime() - Date.now();
   if (diff <= 0) return null;
   return {
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    days:    Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours:   Math.floor((diff / (1000 * 60 * 60)) % 24),
     minutes: Math.floor((diff / (1000 * 60)) % 60),
     seconds: Math.floor((diff / 1000) % 60),
   };
@@ -26,13 +31,14 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export default function DeadlineCountdown() {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(getTimeLeft);
+export default function DeadlineCountdown({ rsvpDeadline, rsvpHref }: DeadlineCountdownProps) {
+  const deadline = new Date(rsvpDeadline);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeLeft(deadline));
 
   useEffect(() => {
-    const id = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
+    const id = setInterval(() => setTimeLeft(getTimeLeft(deadline)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [rsvpDeadline]);
 
   const isUrgent = timeLeft !== null && timeLeft.days < 7;
 
@@ -54,8 +60,8 @@ export default function DeadlineCountdown() {
       </p>
       <div className="flex items-start justify-center gap-6 md:gap-10">
         {[
-          { value: timeLeft.days, label: "Days" },
-          { value: timeLeft.hours, label: "Hours" },
+          { value: timeLeft.days,    label: "Days" },
+          { value: timeLeft.hours,   label: "Hours" },
           { value: timeLeft.minutes, label: "Min" },
           { value: timeLeft.seconds, label: "Sec" },
         ].map(({ value, label }) => (
@@ -85,6 +91,16 @@ export default function DeadlineCountdown() {
         >
           ◆ Deadline approaching — please respond soon
         </motion.p>
+      )}
+      {rsvpHref && (
+        <div className="text-center mt-5">
+          <Link
+            href={rsvpHref}
+            className="text-xs tracking-widest uppercase text-navy/60 border-b border-navy/20 hover:text-navy hover:border-navy/50 transition-colors pb-0.5 font-sans"
+          >
+            RSVP now
+          </Link>
+        </div>
       )}
     </div>
   );
