@@ -3,46 +3,89 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Platform accent — Apple blue (overridden per-couple on wedding pages) */
+    --accent: #0071E3;
+    --accent-hover: #0077ED;
+    --accent-light: #E8F1FB;
+
+    /* Wedding accent — couples customize this */
+    --wedding-accent: #0071E3;
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
+  /* Platform pages use clean white */
   body {
-    @apply bg-ivory text-navy font-sans;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    @apply bg-white text-gray-900 font-sans;
   }
 }
 
 @layer utilities {
+  /* Typography */
   .text-balance {
     text-wrap: balance;
   }
 
-  .font-display {
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+  /* Apple-style card */
+  .card {
+    @apply bg-white rounded-lg shadow-apple-md;
   }
 
-  .font-display-sm {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1.1;
-    letter-spacing: -0.01em;
+  .card-inset {
+    @apply bg-gray-50 rounded-md border border-gray-200;
   }
 
+  /* Wedding-specific (public pages use the ivory background) */
+  .wedding-page {
+    @apply bg-ivory text-navy;
+  }
+
+  .wedding-page h1,
+  .wedding-page h2,
+  .wedding-page h3,
+  .wedding-page h4 {
+    @apply font-serif;
+  }
+
+  /* Glass morphism (wedding pages) */
+  .glass-card {
+    background: rgba(253, 250, 245, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    border-radius: 16px;
+  }
+
+  /* Platform glass */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-gray-600
+           transition-colors duration-150
+           hover:bg-gray-100 hover:text-gray-900;
+  }
+
+  .nav-item-active {
+    @apply bg-accent-light text-accent font-semibold;
+  }
+
+  /* Gold divider (wedding pages) */
   .gold-divider {
     @apply h-px bg-gold/40;
-  }
-
-  .glass-card {
-    background: rgba(253, 250, 245, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(201, 168, 76, 0.2);
-    border-radius: 0.5rem;
   }
 }

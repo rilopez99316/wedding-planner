@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GuestGroup, EventKey, DietaryKey, DietarySelection, RSVPResponse } from "@/lib/types";
-import { weddingConfig } from "@/config/wedding-config";
+import { WeddingPublicData, GroupPublicData } from "./RSVPPageClient";
+import { submitRsvpAction } from "@/lib/actions/rsvp";
+import { DietaryKey, DietarySelection } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import DietarySelector from "./DietarySelector";
 import Divider from "@/components/ui/Divider";
@@ -12,8 +13,9 @@ import Input from "@/components/ui/Input";
 type Step = 1 | 2 | 3 | 4;
 
 interface RSVPFormProps {
-  group: GuestGroup;
-  onComplete: (response: RSVPResponse) => void;
+  wedding: WeddingPublicData;
+  group: GroupPublicData;
+  onComplete: () => void;
   onBack: () => void;
 }
 
@@ -23,15 +25,12 @@ const slideVariants = {
   exit: { opacity: 0, x: -40 },
 };
 
-export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
+export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFormProps) {
   const [step, setStep] = useState<Step>(1);
   const [plusOneAttending, setPlusOneAttending] = useState(false);
   const [plusOneName, setPlusOneName] = useState(group.plusOneNameIfKnown ?? "");
-  const [eventAttendance, setEventAttendance] = useState<Record<EventKey, boolean>>(
-    () =>
-      Object.fromEntries(
-        group.allowedEvents.map((e) => [e, true])
-      ) as Record<EventKey, boolean>
+  const [eventAttendance, setEventAttendance] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(group.allowedEventKeys.map((k) => [k, true]))
   );
   const [dietary, setDietary] = useState<Record<string, DietarySelection>>(() => {
     const init: Record<string, DietarySelection> = {};
@@ -44,38 +43,35 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
     return init;
   });
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function toggleEvent(key: EventKey) {
+  function toggleEvent(key: string) {
     setEventAttendance((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
   function updateDietary(guestId: string, restrictions: DietaryKey[], otherNotes: string) {
-    setDietary((prev) => ({
-      ...prev,
-      [guestId]: { guestId, restrictions, otherNotes },
-    }));
+    setDietary((prev) => ({ ...prev, [guestId]: { guestId, restrictions, otherNotes } }));
   }
 
   async function handleSubmit() {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1000)); // simulate API call
-    const response: RSVPResponse = {
-      groupId: group.id,
-      submittedAt: new Date(),
-      plusOneAttending,
-      plusOneName: plusOneAttending && group.hasPlusOne ? plusOneName : undefined,
-      eventAttendance: group.allowedEvents.map((key) => ({
-        eventKey: key,
-        attending: eventAttendance[key] ?? false,
-      })),
-      dietary: Object.values(dietary).filter(
-        (d) =>
-          d.restrictions.length > 0 ||
-          d.otherNotes.trim().length > 0
-      ),
-    };
-    setSubmitting(false);
-    onComplete(response);
+    setError(null);
+    try {
+      await submitRsvpAction(group.id, wedding.id, {
+        plusOneAttending,
+        plusOneName: plusOneAttending ? plusOneName : undefined,
+        eventAttendance: group.allowedEventKeys.map((key) => ({
+          eventKey: key,
+          attending: eventAttendance[key] ?? false,
+        })),
+        dietary: Object.values(dietary),
+      });
+      onComplete();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const stepLabel = ["Confirm", "Events", "Dietary", "Review"];
@@ -123,6 +119,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
       </div>
 
       <AnimatePresence mode="wait">
+        {/* ── Step 1: Confirm guests ── */}
         {step === 1 && (
           <motion.div
             key="step1"
@@ -134,9 +131,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
             className="space-y-6"
           >
             <div>
-              <h2 className="font-serif text-2xl font-light text-navy">
-                Is this your party?
-              </h2>
+              <h2 className="font-serif text-2xl font-light text-navy">Is this your party?</h2>
               <p className="text-sm text-navy/50 mt-1 font-sans">
                 Please confirm the guests in your group.
               </p>
@@ -154,6 +149,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
                   </span>
                 </div>
               ))}
+
               {group.hasPlusOne && (
                 <div className="space-y-3 mt-4">
                   <label className="flex items-center gap-3 px-4 py-3 border border-navy/10 bg-white/50 cursor-pointer hover:border-gold/50 transition-colors">
@@ -175,9 +171,10 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
                       )}
                     </span>
                     <span className="font-serif text-base font-light text-navy/70">
-                      + Guest
+                      {group.plusOneNameIfKnown ? group.plusOneNameIfKnown : "+ Guest"}
                     </span>
                   </label>
+
                   {plusOneAttending && !group.plusOneNameIfKnown && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
@@ -206,6 +203,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
           </motion.div>
         )}
 
+        {/* ── Step 2: Events ── */}
         {step === 2 && (
           <motion.div
             key="step2"
@@ -224,8 +222,8 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
             </div>
             <Divider />
             <div className="space-y-3">
-              {group.allowedEvents.map((key) => {
-                const event = weddingConfig.events[key];
+              {group.allowedEventKeys.map((key) => {
+                const event = wedding.events.find((e) => e.key === key);
                 const attending = eventAttendance[key];
                 return (
                   <label
@@ -238,15 +236,17 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
                   >
                     <div>
                       <p className="font-serif text-base font-light text-navy">
-                        {event.label}
+                        {event?.label ?? key}
                       </p>
-                      <p className="text-xs text-navy/40 font-sans mt-0.5">
-                        {event.date.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
+                      {event && (
+                        <p className="text-xs text-navy/40 font-sans mt-0.5">
+                          {new Date(event.date).toLocaleDateString("en-US", {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      )}
                     </div>
                     <input
                       type="checkbox"
@@ -268,6 +268,12 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
                   </label>
                 );
               })}
+
+              {group.allowedEventKeys.length === 0 && (
+                <p className="text-sm text-navy/40 font-sans text-center py-4">
+                  No specific events assigned — you&apos;re invited to all celebrations.
+                </p>
+              )}
             </div>
             <div className="flex gap-3 pt-2">
               <Button variant="ghost" onClick={() => setStep(1)} className="flex-1">
@@ -280,6 +286,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
           </motion.div>
         )}
 
+        {/* ── Step 3: Dietary ── */}
         {step === 3 && (
           <motion.div
             key="step3"
@@ -312,7 +319,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
               <div className="space-y-4">
                 <Divider diamond />
                 <DietarySelector
-                  guestName={plusOneName || "Your Guest"}
+                  guestName={plusOneName || group.plusOneNameIfKnown || "Your Guest"}
                   selected={dietary["plus-one"]?.restrictions ?? []}
                   otherNotes={dietary["plus-one"]?.otherNotes ?? ""}
                   onChange={(r, n) => updateDietary("plus-one", r, n)}
@@ -330,6 +337,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
           </motion.div>
         )}
 
+        {/* ── Step 4: Review & submit ── */}
         {step === 4 && (
           <motion.div
             key="step4"
@@ -358,7 +366,7 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
               ))}
               {group.hasPlusOne && plusOneAttending && (
                 <p className="font-serif text-base font-light text-navy">
-                  {plusOneName || "Guest"}
+                  {plusOneName || group.plusOneNameIfKnown || "Guest"}
                 </p>
               )}
             </div>
@@ -366,17 +374,24 @@ export default function RSVPForm({ group, onComplete, onBack }: RSVPFormProps) {
             {/* Events */}
             <div className="space-y-1">
               <p className="text-xs tracking-widest uppercase text-navy/40 font-sans">Attending</p>
-              {group.allowedEvents
+              {group.allowedEventKeys
                 .filter((k) => eventAttendance[k])
-                .map((k) => (
-                  <p key={k} className="text-sm font-sans text-navy">
-                    {weddingConfig.events[k].label}
-                  </p>
-                ))}
-              {group.allowedEvents.every((k) => !eventAttendance[k]) && (
+                .map((k) => {
+                  const event = wedding.events.find((e) => e.key === k);
+                  return (
+                    <p key={k} className="text-sm font-sans text-navy">
+                      {event?.label ?? k}
+                    </p>
+                  );
+                })}
+              {group.allowedEventKeys.every((k) => !eventAttendance[k]) && (
                 <p className="text-sm font-sans text-navy/50 italic">Not attending any events</p>
               )}
             </div>
+
+            {error && (
+              <p className="text-sm text-red-500 font-sans text-center">{error}</p>
+            )}
 
             <div className="flex gap-3 pt-2">
               <Button variant="ghost" onClick={() => setStep(3)} className="flex-1">
