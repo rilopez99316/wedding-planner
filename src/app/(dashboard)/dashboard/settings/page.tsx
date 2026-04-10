@@ -27,8 +27,9 @@ export default async function SettingsPage() {
           rsvpDeadline: wedding.rsvpDeadline.toISOString().slice(0, 16),
           venueName:    wedding.venueName ?? "",
           venueAddress: wedding.venueAddress ?? "",
-          accentColor:  wedding.accentColor,
-          slug:         wedding.slug,
+          accentColor:   wedding.accentColor,
+          coverPhotoUrl: wedding.coverPhotoUrl ?? "",
+          slug:          wedding.slug,
         }}
       />
     </DashboardShell>

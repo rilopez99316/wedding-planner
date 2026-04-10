@@ -63,6 +63,38 @@
       "layer": {
         "app/(wedding)/[slug]/rsvp/page": "action-browser"
       }
+    },
+    "9d77c762fddd62461768b185f6ddd60eb1dd7ffb": {
+      "workers": {
+        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/settings/page": "action-browser"
+      }
+    },
+    "a9739a02b658e063b990584847c56e2e4c2a2542": {
+      "workers": {
+        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/settings/page": "action-browser"
+      }
+    },
+    "e729b764230db50a77cd5f3ea6f5fa995b957170": {
+      "workers": {
+        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/settings/page": "action-browser"
+      }
+    },
+    "f06804e14319e0f73f297b34973c43802293f358": {
+      "workers": {
+        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/settings/page": "action-browser"
+      }
     }
   },
   "edge": {},

@@ -25,7 +25,9 @@ export default async function WeddingLayout({
         partner1={wedding.partner1Name}
         partner2={wedding.partner2Name}
         slug={wedding.slug}
+        hasCoverPhoto={!!wedding.coverPhotoUrl}
       />
+      {/* No top padding on home — hero is full-screen behind the fixed header */}
       <main className="flex-1">{children}</main>
       <WeddingFooter
         partner1={wedding.partner1Name}

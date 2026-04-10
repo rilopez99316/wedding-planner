@@ -1,8 +1,9 @@
 {
+  "/api/upload/route": "app/api/upload/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/(dashboard)/dashboard/guests/page": "app/(dashboard)/dashboard/guests/page.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/dashboard/invitations/page": "app/(dashboard)/dashboard/invitations/page.js",
   "/(dashboard)/dashboard/responses/page": "app/(dashboard)/dashboard/responses/page.js",
-  "/(wedding)/[slug]/rsvp/page": "app/(wedding)/[slug]/rsvp/page.js"
+  "/(wedding)/[slug]/rsvp/page": "app/(wedding)/[slug]/rsvp/page.js",
+  "/(wedding)/[slug]/page": "app/(wedding)/[slug]/page.js",
+  "/(dashboard)/dashboard/settings/page": "app/(dashboard)/dashboard/settings/page.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
 }
