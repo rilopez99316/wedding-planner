@@ -117,9 +117,10 @@ export default function EditGuestDialog({ group, events, children }: EditGuestDi
                       <label className="text-xs font-medium text-gray-600">Guests</label>
                       <div className="rounded-md border border-gray-200 divide-y divide-gray-100">
                         {group.guests.map((g) => (
-                          <div key={g.id} className="px-3 py-2 flex items-center gap-2">
+                          <div key={g.id} className="px-3 py-2 flex items-center gap-2 flex-wrap">
                             <span className="text-sm text-gray-700">{g.firstName} {g.lastName}</span>
                             {g.email && <span className="text-xs text-gray-400">· {g.email}</span>}
+                            {g.phone && <span className="text-xs text-gray-400">· {g.phone}</span>}
                           </div>
                         ))}
                       </div>

@@ -30,11 +30,11 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
 
   async function handleSendAll() {
     const guestIds = notInvitedGroups.flatMap((g) =>
-      g.guests.filter((gu) => gu.email && !gu.invitationSentAt).map((gu) => gu.id)
+      g.guests.filter((gu) => (gu.email || gu.phone) && !gu.invitationSentAt).map((gu) => gu.id)
     );
 
     if (guestIds.length === 0) {
-      alert("No guests with email addresses to invite.");
+      alert("No guests with email or phone to invite.");
       return;
     }
 
@@ -113,7 +113,7 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
             const status = getGroupStatus(group);
             const primaryGuest = group.guests[0];
             const sentAt = group.guests.find((g) => g.invitationSentAt)?.invitationSentAt;
-            const hasEmail = group.guests.some((g) => g.email);
+            const hasContact = group.guests.some((g) => g.email || g.phone);
 
             return (
               <div key={group.id} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-3.5 items-center">
@@ -122,8 +122,11 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
                   {primaryGuest?.email && (
                     <div className="text-xs text-gray-400">{primaryGuest.email}</div>
                   )}
-                  {!hasEmail && (
-                    <div className="text-xs text-amber-600">No email — add one to send invitation</div>
+                  {!primaryGuest?.email && primaryGuest?.phone && (
+                    <div className="text-xs text-gray-400">{primaryGuest.phone}</div>
+                  )}
+                  {!hasContact && (
+                    <div className="text-xs text-amber-600">No email or phone — add contact info to send invitation</div>
                   )}
                 </div>
 
@@ -138,12 +141,12 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
                 </div>
 
                 <div>
-                  {status === "not-invited" && hasEmail && (
+                  {status === "not-invited" && hasContact && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={async () => {
-                        const guestId = group.guests.find((g) => g.email)?.id;
+                        const guestId = group.guests.find((g) => g.email || g.phone)?.id;
                         if (!guestId) return;
                         await sendInvitationsAction([guestId]);
                         router.refresh();
@@ -153,12 +156,12 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
                       Send
                     </Button>
                   )}
-                  {status === "pending" && hasEmail && (
+                  {status === "pending" && hasContact && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={async () => {
-                        const guestId = group.guests.find((g) => g.email)?.id;
+                        const guestId = group.guests.find((g) => g.email || g.phone)?.id;
                         if (!guestId) return;
                         await sendInvitationsAction([guestId]);
                         router.refresh();
