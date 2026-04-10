@@ -16,6 +16,7 @@ import {
   deleteBudgetItemAction,
 } from "@/lib/actions/budget";
 import type { BudgetCategory, BudgetItem, PaymentStatus } from "@prisma/client";
+import BudgetCharts from "@/components/dashboard/BudgetCharts";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -317,6 +318,9 @@ export default function BudgetClient({
           Set a total budget above to track allocation across categories.
         </div>
       )}
+
+      {/* Charts */}
+      <BudgetCharts categories={categories} />
 
       {/* Category accordion */}
       <div className="space-y-2">
