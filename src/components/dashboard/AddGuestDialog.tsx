@@ -13,6 +13,7 @@ interface GuestRow {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
 }
 
 interface AddGuestDialogProps {
@@ -29,11 +30,11 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
   const [groupName, setGroupName] = useState("");
   const [tier, setTier] = useState<"A" | "B">("A");
   const [hasPlusOne, setHasPlusOne] = useState(false);
-  const [guests, setGuests] = useState<GuestRow[]>([{ firstName: "", lastName: "", email: "" }]);
+  const [guests, setGuests] = useState<GuestRow[]>([{ firstName: "", lastName: "", email: "", phone: "" }]);
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>(events.map((e) => e.id));
 
   function addGuestRow() {
-    setGuests((prev) => [...prev, { firstName: "", lastName: "", email: "" }]);
+    setGuests((prev) => [...prev, { firstName: "", lastName: "", email: "", phone: "" }]);
   }
 
   function updateGuest(index: number, field: keyof GuestRow, value: string) {
@@ -55,7 +56,7 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
     setGroupName("");
     setTier("A");
     setHasPlusOne(false);
-    setGuests([{ firstName: "", lastName: "", email: "" }]);
+    setGuests([{ firstName: "", lastName: "", email: "", phone: "" }]);
     setSelectedEventIds(events.map((e) => e.id));
     setError("");
   }
@@ -65,13 +66,16 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
     setError("");
 
     const validGuests = guests.filter((g) => g.firstName && g.lastName);
-    if (!groupName) { setError("Please enter a group name."); return; }
     if (validGuests.length === 0) { setError("Please add at least one guest."); return; }
+    const resolvedGroupName = groupName.trim() ||
+      (validGuests.length > 1
+        ? `The ${validGuests[0].lastName} Family`
+        : `${validGuests[0].firstName} ${validGuests[0].lastName}`);
 
     setLoading(true);
     try {
       await addGuestGroupAction({
-        groupName,
+        groupName: resolvedGroupName,
         hasPlusOne,
         invitationTier: tier,
         guests: validGuests,
@@ -133,9 +137,8 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
                       label="Group name"
                       value={groupName}
                       onChange={(e) => setGroupName(e.target.value)}
-                      placeholder="e.g. The Johnson Family"
-                      hint="This is how you'll identify this group in your dashboard"
-                      required
+                      placeholder="e.g. The Johnson Family (optional)"
+                      hint="Leave blank to auto-generate from the guest's name"
                     />
 
                     {/* Tier */}
@@ -191,10 +194,18 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
                             />
                             <div className="col-span-2">
                               <Input
-                                placeholder="Email (for RSVP invitation)"
+                                placeholder="Email (optional)"
                                 type="email"
                                 value={guest.email}
                                 onChange={(e) => updateGuest(i, "email", e.target.value)}
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <Input
+                                placeholder="Phone (for SMS invitation)"
+                                type="tel"
+                                value={guest.phone}
+                                onChange={(e) => updateGuest(i, "phone", e.target.value)}
                               />
                             </div>
                           </div>

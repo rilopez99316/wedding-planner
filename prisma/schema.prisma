@@ -91,11 +91,11 @@ model Wedding {
 
   // P2: Uncomment when building each module
   // vendors          Vendor[]
-  // budgetCategories BudgetCategory[]
+  budgetCategories BudgetCategory[]
   // checklistItems   ChecklistItem[]
   // weddingParty     WeddingPartyMember[]
   // seatingTables    SeatingTable[]
-  // registries       Registry[]
+  registries       Registry[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,26 +209,40 @@ model DietaryRestriction {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: BUDGET MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model BudgetCategory {
-//   id        String       @id @default(cuid())
-//   weddingId String
-//   wedding   Wedding      @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   name      String
-//   estimated Float
-//   color     String?
-//   items     BudgetItem[]
-// }
-// model BudgetItem {
-//   id          String         @id @default(cuid())
-//   categoryId  String
-//   category    BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-//   description String
-//   estimated   Float
-//   actual      Float?
-//   paidAt      DateTime?
-//   dueDate     DateTime?
-//   vendorId    String?
-// }
+
+enum PaymentStatus {
+  PENDING
+  DEPOSIT_PAID
+  PAID
+}
+
+model BudgetCategory {
+  id        String       @id @default(cuid())
+  weddingId String
+  wedding   Wedding      @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  name      String
+  color     String       @default("#6B7280")
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+  items     BudgetItem[]
+}
+
+model BudgetItem {
+  id            String         @id @default(cuid())
+  weddingId     String
+  categoryId    String
+  category      BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name          String
+  estimatedCost Float          @default(0)
+  actualCost    Float?
+  amountPaid    Float          @default(0)
+  vendorName    String?
+  dueDate       DateTime?
+  notes         String?
+  paymentStatus PaymentStatus  @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: VENDOR MODULE
@@ -292,15 +306,25 @@ model DietaryRestriction {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: REGISTRY MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model Registry {
-//   id        String  @id @default(cuid())
-//   weddingId String
-//   wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   store     String
-//   url       String
-//   isPublic  Boolean @default(true)
-//   gifts     Gift[]
-// }
+
+enum RegistryType {
+  REGISTRY
+  FUND
+}
+
+model Registry {
+  id          String       @id @default(cuid())
+  weddingId   String
+  wedding     Wedding      @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  type        RegistryType @default(REGISTRY)
+  store       String
+  url         String
+  description String?
+  isPublic    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+}
+
+// Gift tracking deferred to Thank-You Tracker module
 // model Gift {
 //   id           String    @id @default(cuid())
 //   registryId   String

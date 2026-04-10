@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { sendConfirmationEmail } from "@/lib/email";
+import { sendConfirmationSms } from "@/lib/sms";
 
 export interface RsvpSubmissionData {
   plusOneAttending: boolean;
@@ -77,20 +78,33 @@ export async function submitRsvpAction(
     }
   }
 
-  // Send confirmation email to first guest with an email address
-  const primaryGuest = group.guests.find((g) => g.email);
-  if (primaryGuest?.email) {
+  // Send confirmation via email and/or SMS to the primary guest
+  const primaryGuest = group.guests.find((g) => g.email || g.phone);
+  if (primaryGuest) {
     const attending = data.eventAttendance.some((e) => e.attending);
-    try {
-      await sendConfirmationEmail({
-        to: primaryGuest.email,
-        guestName: `${primaryGuest.firstName} ${primaryGuest.lastName}`,
-        coupleNames: `${group.wedding.partner1Name} & ${group.wedding.partner2Name}`,
-        weddingDate: group.wedding.weddingDate,
-        attending,
-      });
-    } catch {
-      // Non-fatal — RSVP is saved even if email fails
+    const guestName = `${primaryGuest.firstName} ${primaryGuest.lastName}`;
+    const coupleNames = `${group.wedding.partner1Name} & ${group.wedding.partner2Name}`;
+
+    if (primaryGuest.email) {
+      try {
+        await sendConfirmationEmail({
+          to: primaryGuest.email,
+          guestName,
+          coupleNames,
+          weddingDate: group.wedding.weddingDate,
+          attending,
+        });
+      } catch {
+        // Non-fatal
+      }
+    }
+
+    if (primaryGuest.phone) {
+      try {
+        await sendConfirmationSms({ to: primaryGuest.phone, guestName, coupleNames, attending });
+      } catch {
+        // Non-fatal
+      }
     }
   }
 
