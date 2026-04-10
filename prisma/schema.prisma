@@ -95,7 +95,7 @@ model Wedding {
   // checklistItems   ChecklistItem[]
   // weddingParty     WeddingPartyMember[]
   // seatingTables    SeatingTable[]
-  // registries       Registry[]
+  registries       Registry[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -306,15 +306,25 @@ model BudgetItem {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: REGISTRY MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model Registry {
-//   id        String  @id @default(cuid())
-//   weddingId String
-//   wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   store     String
-//   url       String
-//   isPublic  Boolean @default(true)
-//   gifts     Gift[]
-// }
+
+enum RegistryType {
+  REGISTRY
+  FUND
+}
+
+model Registry {
+  id          String       @id @default(cuid())
+  weddingId   String
+  wedding     Wedding      @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  type        RegistryType @default(REGISTRY)
+  store       String
+  url         String
+  description String?
+  isPublic    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+}
+
+// Gift tracking deferred to Thank-You Tracker module
 // model Gift {
 //   id           String    @id @default(cuid())
 //   registryId   String

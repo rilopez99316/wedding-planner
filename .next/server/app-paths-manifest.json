@@ -1,5 +1,8 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/(dashboard)/dashboard/budget/page": "app/(dashboard)/dashboard/budget/page.js",
-  "/(dashboard)/dashboard/guests/page": "app/(dashboard)/dashboard/guests/page.js"
+  "/(wedding)/[slug]/rsvp/page": "app/(wedding)/[slug]/rsvp/page.js",
+  "/(dashboard)/dashboard/registry/page": "app/(dashboard)/dashboard/registry/page.js",
+  "/(wedding)/[slug]/page": "app/(wedding)/[slug]/page.js",
+  "/(wedding)/[slug]/registry/page": "app/(wedding)/[slug]/registry/page.js"
 }
