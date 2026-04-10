@@ -1,102 +1,70 @@
 {
   "node": {
-    "0cd9d4381cbe49e83ff892ad216907e3adfffd4b": {
+    "1c06901b215af4f683f5d7e0544aebe25f77f7a0": {
       "workers": {
-        "app/(dashboard)/dashboard/guests/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%5D&__client_imported__=true!",
-        "app/(wedding)/[slug]/rsvp/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%2C%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Frsvp.ts%22%2C%5B%22submitRsvpAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/guests/page": "action-browser",
-        "app/(wedding)/[slug]/rsvp/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "46db8b378d54fe43486ff2edb508729d2412b00e": {
+    "262ea3dad64600339f3d2bb97550e3d6aa03b076": {
       "workers": {
-        "app/(dashboard)/dashboard/guests/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%5D&__client_imported__=true!",
-        "app/(wedding)/[slug]/rsvp/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%2C%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Frsvp.ts%22%2C%5B%22submitRsvpAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/guests/page": "action-browser",
-        "app/(wedding)/[slug]/rsvp/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "6a3356259cf37c4ba9b1e331857d41ca0fb7d84d": {
+    "3037e893460df4bc566a46ab3747d96cb7915232": {
       "workers": {
-        "app/(dashboard)/dashboard/guests/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%5D&__client_imported__=true!",
-        "app/(wedding)/[slug]/rsvp/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%2C%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Frsvp.ts%22%2C%5B%22submitRsvpAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/guests/page": "action-browser",
-        "app/(wedding)/[slug]/rsvp/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "99a76f115bd8e58aec9a0c33b2b05b59ed2f5f5a": {
+    "5752c14fdd88d2d43f8cda9096332cf7b734aec4": {
       "workers": {
-        "app/(dashboard)/dashboard/guests/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%5D&__client_imported__=true!",
-        "app/(wedding)/[slug]/rsvp/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%2C%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Frsvp.ts%22%2C%5B%22submitRsvpAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/guests/page": "action-browser",
-        "app/(wedding)/[slug]/rsvp/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "7ed09916076109189c2d777591cb2fb8703ca548": {
+    "69c70ba3523f9215f6189e3247cd91e2403fcc03": {
       "workers": {
-        "app/(dashboard)/dashboard/invitations/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Finvitations.ts%22%2C%5B%22sendInvitationsAction%22%2C%22sendRemindersAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/invitations/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "a26e98573d15a481e03f717096fd970dc0b48d77": {
+    "a0ec4b7496a2f55a5680a71a9dd08a67143c1132": {
       "workers": {
-        "app/(dashboard)/dashboard/invitations/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Finvitations.ts%22%2C%5B%22sendInvitationsAction%22%2C%22sendRemindersAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/invitations/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "3c0c4dee7ff01ad6f355987bc5aea7c47c039f2b": {
+    "a2b56d7bb6dd88ac2fd9dcafe78788e7ca36f33f": {
       "workers": {
-        "app/(wedding)/[slug]/rsvp/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fguests.ts%22%2C%5B%22addGuestGroupAction%22%2C%22searchGuestsAction%22%2C%22updateGuestGroupAction%22%2C%22deleteGuestGroupAction%22%5D%5D%2C%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Frsvp.ts%22%2C%5B%22submitRsvpAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(wedding)/[slug]/rsvp/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     },
-    "9d77c762fddd62461768b185f6ddd60eb1dd7ffb": {
+    "aaf94d98bcbd5ec29a230a084dd6172649d3d46b": {
       "workers": {
-        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
+        "app/(dashboard)/dashboard/budget/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fbudget.ts%22%2C%5B%22deleteBudgetItemAction%22%2C%22initBudgetCategoriesAction%22%2C%22updateTotalBudgetAction%22%2C%22addBudgetCategoryAction%22%2C%22updateBudgetItemAction%22%2C%22addBudgetItemAction%22%2C%22updateBudgetCategoryAction%22%2C%22deleteBudgetCategoryAction%22%5D%5D%5D&__client_imported__=!"
       },
       "layer": {
-        "app/(dashboard)/dashboard/settings/page": "action-browser"
-      }
-    },
-    "a9739a02b658e063b990584847c56e2e4c2a2542": {
-      "workers": {
-        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/(dashboard)/dashboard/settings/page": "action-browser"
-      }
-    },
-    "e729b764230db50a77cd5f3ea6f5fa995b957170": {
-      "workers": {
-        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/(dashboard)/dashboard/settings/page": "action-browser"
-      }
-    },
-    "f06804e14319e0f73f297b34973c43802293f358": {
-      "workers": {
-        "app/(dashboard)/dashboard/settings/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Frilopez99316%2FDocuments%2FProjects%2Fwedding-planner%2Fsrc%2Flib%2Factions%2Fsettings.ts%22%2C%5B%22updateEventAction%22%2C%22updateWeddingDetailsAction%22%2C%22deleteEventAction%22%2C%22addEventAction%22%5D%5D%5D&__client_imported__=true!"
-      },
-      "layer": {
-        "app/(dashboard)/dashboard/settings/page": "action-browser"
+        "app/(dashboard)/dashboard/budget/page": "rsc"
       }
     }
   },
   "edge": {},
-  "encryptionKey": "WHJ3g3P6YEpZ6mY/SSzkqY728VH8P1J8fOijDRe4gkI="
+  "encryptionKey": "pBGZbJMO4bMxb4XohFqMArm19eewI7h1xcY9U8P1XSg="
 }

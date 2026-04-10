@@ -16,50 +16,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(dashboard)/dashboard/guests/page": [
+    "/(dashboard)/dashboard/budget/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/guests/page.js"
-    ],
-    "/(dashboard)/dashboard/invitations/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/invitations/page.js"
-    ],
-    "/(dashboard)/dashboard/responses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/responses/page.js"
-    ],
-    "/(wedding)/[slug]/rsvp/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/rsvp/page.js"
-    ],
-    "/(wedding)/[slug]/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/layout.js"
-    ],
-    "/(wedding)/[slug]/registry/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/registry/page.js"
-    ],
-    "/(wedding)/[slug]/schedule/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/schedule/page.js"
-    ],
-    "/(wedding)/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/page.js"
-    ],
-    "/(dashboard)/dashboard/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/settings/page.js"
+      "static/chunks/app/(dashboard)/dashboard/budget/page.js"
     ]
   }
 }
