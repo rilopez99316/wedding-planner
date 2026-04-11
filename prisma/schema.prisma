@@ -93,7 +93,7 @@ model Wedding {
   vendors          Vendor[]
   budgetCategories BudgetCategory[]
   checklistItems   ChecklistItem[]
-  // weddingParty     WeddingPartyMember[]
+  weddingParty     WeddingPartyMember[]
   // seatingTables    SeatingTable[]
   registries       Registry[]
 }
@@ -280,20 +280,46 @@ model VendorPackage {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: WEDDING PARTY MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model WeddingPartyMember {
-//   id        String  @id @default(cuid())
-//   weddingId String
-//   wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   guestId   String?
-//   name      String
-//   role      String
-//   side      String
-//   email     String?
-//   phone     String?
-//   attire    String?
-//   notes     String?
-//   order     Int     @default(0)
-// }
+enum WeddingPartyRole {
+  MOH
+  BRIDESMAID
+  BEST_MAN
+  GROOMSMAN
+  FLOWER_GIRL
+  RING_BEARER
+  PARENT_OF_BRIDE
+  PARENT_OF_GROOM
+  OFFICIANT
+  OTHER
+}
+
+enum WeddingPartySide {
+  BRIDE
+  GROOM
+  BOTH
+}
+
+model WeddingPartyMember {
+  id           String           @id @default(cuid())
+  weddingId    String
+  wedding      Wedding          @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  name         String
+  role         WeddingPartyRole
+  side         WeddingPartySide
+  photoUrl     String?
+
+  email        String?
+  phone        String?
+  notes        String?          @db.Text
+  displayOrder Int              @default(0)
+  isPublic     Boolean          @default(true)
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([weddingId, displayOrder])
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: SEATING MODULE
