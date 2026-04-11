@@ -32,7 +32,9 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split(".").pop() ?? "jpg";
-  const fileName = `${session.user.id}/cover-${Date.now()}.${ext}`;
+  const type = req.nextUrl.searchParams.get("type") ?? "cover";
+  const prefix = type === "party_member" ? "party" : "cover";
+  const fileName = `${session.user.id}/${prefix}-${Date.now()}.${ext}`;
 
   const supabase = getSupabase();
   const arrayBuffer = await file.arrayBuffer();

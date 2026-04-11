@@ -17,13 +17,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function WeddingHomePage({ params }: { params: { slug: string } }) {
   const wedding = await db.wedding.findUnique({
-    where: { slug: params.slug },
-    include: { events: { orderBy: { order: "asc" } } },
+    where:   { slug: params.slug },
+    include: {
+      events:       { orderBy: { order: "asc" } },
+      weddingParty: { where: { isPublic: true }, orderBy: { displayOrder: "asc" } },
+    },
   });
 
   if (!wedding) notFound();
 
-  const { partner1Name, partner2Name, weddingDate, venueName, venueAddress, rsvpDeadline, events, slug, coverPhotoUrl } = wedding;
+  const { partner1Name, partner2Name, weddingDate, venueName, venueAddress, rsvpDeadline, events, weddingParty, slug, coverPhotoUrl } = wedding;
+
+  const brideMembers = weddingParty.filter((m) => m.side === "BRIDE" || m.side === "BOTH");
+  const groomMembers = weddingParty.filter((m) => m.side === "GROOM" || m.side === "BOTH");
+  const showPartySection = weddingParty.length > 0;
 
   const weddingDateFormatted = new Date(weddingDate).toLocaleDateString("en-US", {
     weekday: "long",
@@ -171,6 +178,117 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
                 </FadeIn>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Wedding Party ────────────────────────────────────────────────── */}
+      {showPartySection && (
+        <section className="py-24 px-6 bg-champagne/20">
+          <div className="max-w-5xl mx-auto">
+            <FadeIn direction="up">
+              <div className="text-center mb-16">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold font-sans mb-4">Our Beloved</p>
+                <h2 className="font-serif text-4xl md:text-5xl font-light text-navy">Wedding Party</h2>
+                <Divider diamond className="mt-8" />
+              </div>
+            </FadeIn>
+
+            {/* Bride's side */}
+            {brideMembers.length > 0 && (
+              <div className="mb-16">
+                <FadeIn direction="up">
+                  <p className="text-[10px] tracking-[0.4em] uppercase text-navy/40 font-sans text-center mb-10">
+                    Bride&apos;s Side
+                  </p>
+                </FadeIn>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+                  {brideMembers.map((member, i) => (
+                    <FadeIn key={member.id} direction="up" delay={i * 0.07}>
+                      <div className="flex flex-col items-center text-center gap-3">
+                        {member.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={member.photoUrl}
+                            alt={member.name}
+                            className="w-24 h-24 rounded-full object-cover shadow-apple-md ring-4 ring-white"
+                          />
+                        ) : (
+                          <div className="w-24 h-24 rounded-full bg-champagne flex items-center justify-center shadow-apple-md ring-4 ring-white">
+                            <span className="font-serif text-2xl font-light text-navy/60">
+                              {member.name.trim().split(/\s+/).map((w: string) => w[0]).slice(0, 2).join("").toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-serif text-lg font-light text-navy">{member.name}</p>
+                          <p className="text-[10px] tracking-[0.3em] uppercase text-gold font-sans mt-0.5">
+                            {member.role === "MOH" ? "Maid of Honor"
+                              : member.role === "BRIDESMAID" ? "Bridesmaid"
+                              : member.role === "BEST_MAN" ? "Best Man"
+                              : member.role === "GROOMSMAN" ? "Groomsman"
+                              : member.role === "FLOWER_GIRL" ? "Flower Girl"
+                              : member.role === "RING_BEARER" ? "Ring Bearer"
+                              : member.role === "PARENT_OF_BRIDE" ? "Parent of Bride"
+                              : member.role === "PARENT_OF_GROOM" ? "Parent of Groom"
+                              : member.role === "OFFICIANT" ? "Officiant"
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </FadeIn>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Groom's side */}
+            {groomMembers.length > 0 && (
+              <div>
+                <FadeIn direction="up">
+                  <p className="text-[10px] tracking-[0.4em] uppercase text-navy/40 font-sans text-center mb-10">
+                    Groom&apos;s Side
+                  </p>
+                </FadeIn>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+                  {groomMembers.map((member, i) => (
+                    <FadeIn key={member.id} direction="up" delay={i * 0.07}>
+                      <div className="flex flex-col items-center text-center gap-3">
+                        {member.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={member.photoUrl}
+                            alt={member.name}
+                            className="w-24 h-24 rounded-full object-cover shadow-apple-md ring-4 ring-white"
+                          />
+                        ) : (
+                          <div className="w-24 h-24 rounded-full bg-champagne flex items-center justify-center shadow-apple-md ring-4 ring-white">
+                            <span className="font-serif text-2xl font-light text-navy/60">
+                              {member.name.trim().split(/\s+/).map((w: string) => w[0]).slice(0, 2).join("").toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-serif text-lg font-light text-navy">{member.name}</p>
+                          <p className="text-[10px] tracking-[0.3em] uppercase text-gold font-sans mt-0.5">
+                            {member.role === "MOH" ? "Maid of Honor"
+                              : member.role === "BRIDESMAID" ? "Bridesmaid"
+                              : member.role === "BEST_MAN" ? "Best Man"
+                              : member.role === "GROOMSMAN" ? "Groomsman"
+                              : member.role === "FLOWER_GIRL" ? "Flower Girl"
+                              : member.role === "RING_BEARER" ? "Ring Bearer"
+                              : member.role === "PARENT_OF_BRIDE" ? "Parent of Bride"
+                              : member.role === "PARENT_OF_GROOM" ? "Parent of Groom"
+                              : member.role === "OFFICIANT" ? "Officiant"
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </FadeIn>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
