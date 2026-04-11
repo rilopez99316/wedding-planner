@@ -1,15 +1,5 @@
 {
   "pages": {
-    "/(dashboard)/dashboard/registry/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/registry/page.js"
-    ],
-    "/(dashboard)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/layout.js"
-    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -26,20 +16,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(wedding)/[slug]/layout.js"
     ],
+    "/(wedding)/[slug]/schedule/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(wedding)/[slug]/schedule/page.js"
+    ],
     "/(wedding)/[slug]/registry/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(wedding)/[slug]/registry/page.js"
     ],
-    "/(wedding)/[slug]/rsvp/page": [
+    "/(dashboard)/dashboard/settings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(wedding)/[slug]/rsvp/page.js"
+      "static/chunks/app/(dashboard)/dashboard/settings/page.js"
     ],
-    "/_not-found/page": [
+    "/(dashboard)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(dashboard)/layout.js"
     ]
   }
 }

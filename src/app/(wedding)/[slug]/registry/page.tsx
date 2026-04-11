@@ -33,7 +33,7 @@ export default async function RegistryPage({ params }: { params: { slug: string 
   return (
     <div className="min-h-screen bg-ivory">
       {/* Header */}
-      <div className="bg-champagne/20 border-b border-gold/10 py-14 px-6 text-center">
+      <div className="bg-champagne/20 border-b border-gold/10 pt-28 pb-14 px-6 text-center">
         <FadeIn direction="up">
           <p className="text-xs tracking-[0.3em] uppercase text-gold font-sans mb-3">
             {partner1Name} &amp; {partner2Name}
