@@ -92,7 +92,7 @@ model Wedding {
   // P2: Uncomment when building each module
   vendors          Vendor[]
   budgetCategories BudgetCategory[]
-  // checklistItems   ChecklistItem[]
+  checklistItems   ChecklistItem[]
   // weddingParty     WeddingPartyMember[]
   // seatingTables    SeatingTable[]
   registries       Registry[]
@@ -194,17 +194,17 @@ model DietaryRestriction {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: CHECKLIST MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model ChecklistItem {
-//   id          String    @id @default(cuid())
-//   weddingId   String
-//   wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   title       String
-//   category    String
-//   dueDate     DateTime?
-//   completedAt DateTime?
-//   isCustom    Boolean   @default(false)
-//   order       Int       @default(0)
-// }
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  weddingId   String
+  wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  title       String
+  category    String
+  dueDate     DateTime?
+  completedAt DateTime?
+  isCustom    Boolean   @default(false)
+  order       Int       @default(0)
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: BUDGET MODULE

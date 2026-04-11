@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"components/dashboard/AddVendorDialog.tsx -> @/lib/actions/vendors\":{\"id\":\"components/dashboard/AddVendorDialog.tsx -> @/lib/actions/vendors\",\"files\":[]}}"
