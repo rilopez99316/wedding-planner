@@ -15,8 +15,7 @@ export default async function ChecklistPage() {
   const wedding = await db.wedding.findFirst({
     where: { ownerId: session.user.id },
     select: {
-      id:          true,
-      weddingDate: true,
+      id: true,
       checklistItems: {
         orderBy: { order: "asc" },
       },
@@ -35,7 +34,6 @@ export default async function ChecklistPage() {
     >
       <ChecklistClient
         weddingId={wedding.id}
-        weddingDate={wedding.weddingDate}
         items={wedding.checklistItems}
         categoryOrder={CATEGORY_ORDER as unknown as string[]}
       />

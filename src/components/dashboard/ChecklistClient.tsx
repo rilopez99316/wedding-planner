@@ -21,7 +21,6 @@ import type { ChecklistItem } from "@prisma/client";
 
 interface ChecklistClientProps {
   weddingId:     string;
-  weddingDate:   Date;
   items:         ChecklistItem[];
   categoryOrder: string[];
 }

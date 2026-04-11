@@ -158,7 +158,7 @@ export async function initChecklistItemsAction() {
   const dateChanged =
     !!dayOfItem &&
     dayOfItem.dueDate?.toISOString().split("T")[0] !==
-      weddingDate.toISOString().split("T")[0];
+      wedding.weddingDate.toISOString().split("T")[0];
 
   // Detect stale seed: no tasks yet, any old task title found, or wedding date changed
   const isStale =
