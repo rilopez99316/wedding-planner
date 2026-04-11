@@ -150,13 +150,21 @@ export async function initChecklistItemsAction() {
 
   const existingDefaults = await db.checklistItem.findMany({
     where:  { weddingId: wedding.id, isCustom: false },
-    select: { id: true, title: true, completedAt: true },
+    select: { id: true, title: true, completedAt: true, category: true, dueDate: true },
   });
 
-  // Detect stale seed: no tasks yet OR any old task title found
+  // Detect wedding-date change: day_of items should have dueDate == weddingDate
+  const dayOfItem = existingDefaults.find((i) => i.category === "day_of");
+  const dateChanged =
+    !!dayOfItem &&
+    dayOfItem.dueDate?.toISOString().split("T")[0] !==
+      weddingDate.toISOString().split("T")[0];
+
+  // Detect stale seed: no tasks yet, any old task title found, or wedding date changed
   const isStale =
     existingDefaults.length === 0 ||
-    existingDefaults.some((i) => STALE_TITLES.has(i.title));
+    existingDefaults.some((i) => STALE_TITLES.has(i.title)) ||
+    dateChanged;
 
   if (!isStale) return;
 
