@@ -96,6 +96,7 @@ model Wedding {
   weddingParty     WeddingPartyMember[]
   // seatingTables    SeatingTable[]
   registries       Registry[]
+  timelineEvents   TimelineEvent[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -362,6 +363,28 @@ model Registry {
   description String?
   isPublic    Boolean      @default(true)
   createdAt   DateTime     @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P2: TIMELINE MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TimelineEvent {
+  id         String    @id @default(cuid())
+  weddingId  String
+  wedding    Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  title      String
+  startTime  DateTime
+  endTime    DateTime?
+  category   String    // getting_ready | travel | ceremony | photos | cocktail_hour | reception | other
+  location   String?
+  assignedTo String?
+  notes      String?   @db.Text
+  order      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([weddingId, startTime])
 }
 
 // Gift tracking deferred to Thank-You Tracker module
