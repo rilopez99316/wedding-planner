@@ -49,6 +49,7 @@ export async function updateWeddingDetailsAction(formData: unknown) {
   });
 
   revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/checklist");
   revalidatePath(`/${wedding.slug}`);
 }
 
