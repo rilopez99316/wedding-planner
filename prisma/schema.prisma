@@ -90,7 +90,7 @@ model Wedding {
   guestGroups GuestGroup[]
 
   // P2: Uncomment when building each module
-  // vendors          Vendor[]
+  vendors          Vendor[]
   budgetCategories BudgetCategory[]
   // checklistItems   ChecklistItem[]
   // weddingParty     WeddingPartyMember[]
@@ -247,21 +247,35 @@ model BudgetItem {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: VENDOR MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model Vendor {
-//   id          String   @id @default(cuid())
-//   weddingId   String
-//   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   category    String
-//   name        String
-//   contactName String?
-//   email       String?
-//   phone       String?
-//   website     String?
-//   contractUrl String?
-//   notes       String?
-//   status      String   @default("prospect")
-//   createdAt   DateTime @default(now())
-// }
+
+model Vendor {
+  id          String          @id @default(cuid())
+  weddingId   String
+  wedding     Wedding         @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category    String          // "venue" | "photographer" | "caterer" | "florist" | "dj" | "other"
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  website     String?
+  notes       String?
+  status      String          @default("prospect") // "prospect" | "shortlisted" | "booked" | "rejected"
+  packages    VendorPackage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model VendorPackage {
+  id         String   @id @default(cuid())
+  vendorId   String
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name       String
+  price      Float?
+  capacity   Int?
+  inclusions String?
+  notes      String?
+  createdAt  DateTime @default(now())
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: WEDDING PARTY MODULE
