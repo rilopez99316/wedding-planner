@@ -8,12 +8,13 @@ import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { addVendorAction, updateVendorAction, addPackageAction, deletePackageAction } from "@/lib/actions/vendors";
 import type { VendorWithPackages } from "@/components/dashboard/VendorCard";
-import type { VendorPackage } from "@prisma/client";
+import type { VendorDocument, VendorPackage } from "@prisma/client";
+import VendorDocumentsTab from "@/components/dashboard/VendorDocumentsTab";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type Category = "venue" | "photographer" | "caterer" | "florist" | "dj" | "other";
-type Tab = "info" | "packages";
+type Tab = "info" | "packages" | "documents";
 
 const CATEGORIES: { value: Category; label: string }[] = [
   { value: "venue",        label: "Venue" },
@@ -56,9 +57,10 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
   const [phone,       setPhone]       = useState("");
   const [website,     setWebsite]     = useState("");
   const [notes,       setNotes]       = useState("");
-  const [packages,    setPackages]    = useState<PackageRow[]>([emptyPackageRow()]);
-  const [loading,     setLoading]     = useState(false);
-  const [error,       setError]       = useState("");
+  const [packages,       setPackages]       = useState<PackageRow[]>([emptyPackageRow()]);
+  const [localDocuments, setLocalDocuments] = useState<VendorDocument[]>([]);
+  const [loading,        setLoading]        = useState(false);
+  const [error,          setError]          = useState("");
 
   const isEditMode = !!editingVendor;
 
@@ -85,6 +87,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
             }))
           : [emptyPackageRow()]
       );
+      setLocalDocuments(editingVendor.documents ?? []);
     } else {
       setCategory("venue");
       setName("");
@@ -94,6 +97,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
       setWebsite("");
       setNotes("");
       setPackages([emptyPackageRow()]);
+      setLocalDocuments([]);
     }
     setTab("info");
     setError("");
@@ -136,7 +140,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
         vendor = await updateVendorAction(editingVendor.id, vendorPayload) as VendorWithPackages;
       } else {
         const created = await addVendorAction(vendorPayload);
-        vendor = { ...created, packages: [] };
+        vendor = { ...created, packages: [], documents: [] };
       }
 
       // Sync packages
@@ -160,7 +164,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
         }
       }
 
-      onSuccess(vendor);
+      onSuccess({ ...vendor, documents: localDocuments });
       onOpenChange(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -209,7 +213,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
 
                   {/* Tabs */}
                   <div className="flex border-b border-gray-100 px-6 shrink-0">
-                    {(["info", "packages"] as Tab[]).map((t) => (
+                    {(["info", "packages", "documents"] as Tab[]).map((t) => (
                       <button
                         key={t}
                         type="button"
@@ -221,7 +225,16 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                             : "border-transparent text-gray-500 hover:text-gray-700"
                         )}
                       >
-                        {t === "info" ? "Info" : "Packages"}
+                        {t === "info" ? "Info" : t === "packages" ? "Packages" : (
+                          <span className="flex items-center gap-1.5">
+                            Documents
+                            {localDocuments.length > 0 && (
+                              <span className="bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5 leading-none">
+                                {localDocuments.length}
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -390,6 +403,21 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                             + Add another package
                           </button>
                         </div>
+                      )}
+
+                      {/* DOCUMENTS TAB */}
+                      {tab === "documents" && (
+                        isEditMode && editingVendor ? (
+                          <VendorDocumentsTab
+                            vendorId={editingVendor.id}
+                            documents={localDocuments}
+                            onChange={setLocalDocuments}
+                          />
+                        ) : (
+                          <div className="py-12 text-center text-sm text-gray-400">
+                            Save the vendor first to attach documents.
+                          </div>
+                        )
                       )}
                     </div>
 

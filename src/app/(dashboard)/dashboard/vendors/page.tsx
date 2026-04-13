@@ -13,7 +13,10 @@ export default async function VendorsPage() {
 
   const vendors = await db.vendor.findMany({
     where:   { weddingId: wedding.id },
-    include: { packages: { orderBy: { createdAt: "asc" } } },
+    include: {
+      packages:  { orderBy: { createdAt: "asc" } },
+      documents: { orderBy: { createdAt: "asc" } },
+    },
     orderBy: { createdAt: "asc" },
   });
 

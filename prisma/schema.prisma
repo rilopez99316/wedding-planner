@@ -263,6 +263,7 @@ model Vendor {
   notes       String?
   status      String          @default("prospect") // "prospect" | "shortlisted" | "booked" | "rejected"
   packages    VendorPackage[]
+  documents   VendorDocument[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 }
@@ -277,6 +278,19 @@ model VendorPackage {
   inclusions String?
   notes      String?
   createdAt  DateTime @default(now())
+}
+
+model VendorDocument {
+  id        String   @id @default(cuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  fileType  String
+  fileSize  Int?
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
