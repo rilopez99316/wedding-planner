@@ -5,9 +5,37 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { TableShape } from "@prisma/client";
-import type { ClientTable } from "@/lib/types/seating";
+import type { ClientTable, SeatPosition } from "@/lib/types/seating";
 
 const REVALIDATE_PATH = "/dashboard/seating";
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function buildSeatPositions(
+  assignments: { guestId: string; seatNumber: number | null }[]
+): SeatPosition[] {
+  const explicit: SeatPosition[] = [];
+  const implicit: string[]       = [];
+
+  for (const a of assignments) {
+    if (a.seatNumber !== null) {
+      explicit.push({ seatNumber: a.seatNumber, guestId: a.guestId });
+    } else {
+      implicit.push(a.guestId);
+    }
+  }
+
+  const usedSeats = new Set(explicit.map((e) => e.seatNumber));
+  const result: SeatPosition[] = [...explicit];
+  let next = 1;
+  for (const guestId of implicit) {
+    while (usedSeats.has(next)) next++;
+    result.push({ seatNumber: next, guestId });
+    usedSeats.add(next);
+    next++;
+  }
+  return result.sort((a, b) => a.seatNumber - b.seatNumber);
+}
 
 async function getWeddingForUser(userId: string) {
   const wedding = await db.wedding.findFirst({ where: { ownerId: userId } });
@@ -57,7 +85,7 @@ export async function createTableAction(formData: unknown): Promise<ClientTable>
   });
 
   revalidatePath(REVALIDATE_PATH);
-  return { ...table, guestIds: [] };
+  return { ...table, guestIds: [], seatPositions: [] };
 }
 
 export async function updateTableAction(tableId: string, formData: unknown): Promise<ClientTable> {
@@ -77,18 +105,19 @@ export async function updateTableAction(tableId: string, formData: unknown): Pro
   const table = await db.seatingTable.update({
     where: { id: tableId },
     data:  parsed.data,
-    include: { assignments: { select: { guestId: true } } },
+    include: { assignments: { select: { guestId: true, seatNumber: true } } },
   });
 
   revalidatePath(REVALIDATE_PATH);
   return {
-    id:        table.id,
-    name:      table.name,
-    capacity:  table.capacity,
-    shape:     table.shape,
-    notes:     table.notes,
-    sortOrder: table.sortOrder,
-    guestIds:  table.assignments.map((a) => a.guestId),
+    id:            table.id,
+    name:          table.name,
+    capacity:      table.capacity,
+    shape:         table.shape,
+    notes:         table.notes,
+    sortOrder:     table.sortOrder,
+    guestIds:      table.assignments.map((a) => a.guestId),
+    seatPositions: buildSeatPositions(table.assignments),
   };
 }
 
@@ -220,6 +249,77 @@ export async function moveGuestAction(
     db.seatingAssignment.delete({ where: { guestId } }),
     db.seatingAssignment.create({ data: { tableId: toTableId, guestId } }),
   ]);
+
+  revalidatePath(REVALIDATE_PATH);
+}
+
+// ── Seat Assignment ────────────────────────────────────────────────────────
+
+/** Assign a guest to a specific numbered seat at a table.
+ *  - Guest must not already be assigned to a DIFFERENT table.
+ *  - If they're already at this table, updates their seatNumber.
+ *  - The target seat must not be occupied by a different guest.
+ *  - If guestId is null, clears the seat (unassigns whoever sat there).
+ */
+export async function assignToSeatAction(
+  tableId: string,
+  seatNumber: number,
+  guestId: string | null
+): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+
+  const table = await db.seatingTable.findFirst({
+    where: { id: tableId, weddingId: wedding.id },
+    include: { assignments: { select: { guestId: true, seatNumber: true } } },
+  });
+  if (!table) throw new Error("Table not found.");
+
+  // ── Clearing a seat ──────────────────────────────────────────────────────
+  if (guestId === null) {
+    const existing = table.assignments.find((a) => a.seatNumber === seatNumber);
+    if (existing) {
+      await db.seatingAssignment.delete({ where: { guestId: existing.guestId } });
+      revalidatePath(REVALIDATE_PATH);
+    }
+    return;
+  }
+
+  // ── Assigning a guest to a specific seat ─────────────────────────────────
+
+  // Check that the guest belongs to this wedding
+  const guest = await db.guest.findFirst({ where: { id: guestId, weddingId: wedding.id } });
+  if (!guest) throw new Error("Guest not found.");
+
+  // Check that the target seat isn't taken by a different guest
+  const seatTakenBy = table.assignments.find(
+    (a) => a.seatNumber === seatNumber && a.guestId !== guestId
+  );
+  if (seatTakenBy) throw new Error(`Seat ${seatNumber} is already occupied.`);
+
+  // Check if the guest is already at this table
+  const alreadyHere = table.assignments.find((a) => a.guestId === guestId);
+
+  if (alreadyHere) {
+    // Just update seatNumber
+    await db.seatingAssignment.update({
+      where: { guestId },
+      data:  { seatNumber },
+    });
+  } else {
+    // Guest may be at another table — not allowed (should move them first)
+    const elsewhere = await db.seatingAssignment.findUnique({ where: { guestId } });
+    if (elsewhere) throw new Error("Guest is already at another table. Move them first.");
+
+    // Capacity check
+    if (table.assignments.length >= table.capacity) {
+      throw new Error(`${table.name} is at full capacity (${table.capacity} seats).`);
+    }
+
+    await db.seatingAssignment.create({ data: { tableId, guestId, seatNumber } });
+  }
 
   revalidatePath(REVALIDATE_PATH);
 }

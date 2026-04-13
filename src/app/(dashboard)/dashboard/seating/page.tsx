@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import SeatingClient from "@/components/dashboard/SeatingClient";
-import type { ClientGuest, ClientTable } from "@/lib/types/seating";
+import type { ClientGuest, ClientTable, SeatPosition } from "@/lib/types/seating";
 
 export default async function SeatingPage() {
   const session = await auth();
@@ -17,7 +17,7 @@ export default async function SeatingPage() {
         orderBy: { sortOrder: "asc" },
         include: {
           assignments: {
-            select: { guestId: true },
+            select: { guestId: true, seatNumber: true },
           },
         },
       },
@@ -69,15 +69,44 @@ export default async function SeatingPage() {
 
   // ── Build client tables ───────────────────────────────────────────────────
 
-  const tables: ClientTable[] = wedding.seatingTables.map((t) => ({
-    id:        t.id,
-    name:      t.name,
-    capacity:  t.capacity,
-    shape:     t.shape,
-    notes:     t.notes,
-    sortOrder: t.sortOrder,
-    guestIds:  t.assignments.map((a) => a.guestId),
-  }));
+  const tables: ClientTable[] = wedding.seatingTables.map((t) => {
+    const guestIds = t.assignments.map((a) => a.guestId);
+
+    // Build seatPositions: guests with explicit seatNumber keep their spot;
+    // guests assigned via DnD (seatNumber = null) fill remaining slots in order.
+    const explicit: SeatPosition[] = [];
+    const implicit: string[]       = [];
+
+    for (const a of t.assignments) {
+      if (a.seatNumber !== null) {
+        explicit.push({ seatNumber: a.seatNumber, guestId: a.guestId });
+      } else {
+        implicit.push(a.guestId);
+      }
+    }
+
+    const usedSeats = new Set(explicit.map((e) => e.seatNumber));
+    const seatPositions: SeatPosition[] = [...explicit];
+    let next = 1;
+    for (const guestId of implicit) {
+      while (usedSeats.has(next)) next++;
+      seatPositions.push({ seatNumber: next, guestId });
+      usedSeats.add(next);
+      next++;
+    }
+    seatPositions.sort((a, b) => a.seatNumber - b.seatNumber);
+
+    return {
+      id:            t.id,
+      name:          t.name,
+      capacity:      t.capacity,
+      shape:         t.shape,
+      notes:         t.notes,
+      sortOrder:     t.sortOrder,
+      guestIds,
+      seatPositions,
+    };
+  });
 
   // ── Maps / counts ─────────────────────────────────────────────────────────
 

@@ -10,6 +10,11 @@ export type ClientGuest = {
   dietaryRestrictions: { restriction: string; notes: string | null }[];
 };
 
+export type SeatPosition = {
+  seatNumber: number;  // 1-based
+  guestId: string;
+};
+
 export type ClientTable = {
   id: string;
   name: string;
@@ -18,4 +23,7 @@ export type ClientTable = {
   notes: string | null;
   sortOrder: number;
   guestIds: string[];
+  /** Ordered list of seat positions (1-based). Guests assigned via DnD
+   *  (no explicit seat) fill in remaining spots sequentially. */
+  seatPositions: SeatPosition[];
 };

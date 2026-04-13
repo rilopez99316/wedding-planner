@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
-import type { ClientGuest, ClientTable } from "@/lib/types/seating";
+import type { ClientGuest, ClientTable, SeatPosition } from "@/lib/types/seating";
 import {
   assignGuestAction,
   unassignGuestAction,
   moveGuestAction,
   deleteTableAction,
   autoAssignAction,
+  assignToSeatAction,
 } from "@/lib/actions/seating";
 import SeatingStatsBar from "./seating/SeatingStatsBar";
 import UnassignedSidebar from "./seating/UnassignedSidebar";
 import TableGrid from "./seating/TableGrid";
 import AddTableDialog from "./seating/AddTableDialog";
 import AssignGuestMenu from "./seating/AssignGuestMenu";
+import SeatPickerMenu from "./seating/SeatPickerMenu";
 
 interface SeatingClientProps {
   weddingId:       string;
@@ -37,6 +39,11 @@ export default function SeatingClient({
   // ── Core state ─────────────────────────────────────────────────────────────
   const [tables, setTables] = useState<ClientTable[]>(initialTables);
 
+  // Sync local state whenever the server re-fetches (e.g. after auto-assign)
+  useEffect(() => {
+    setTables(initialTables);
+  }, [initialTables]);
+
   // ── Derived: unassigned guests ─────────────────────────────────────────────
   const seatedSet = useMemo(
     () => new Set(tables.flatMap((t) => t.guestIds)),
@@ -53,6 +60,13 @@ export default function SeatingClient({
   const [assignGuest,     setAssignGuest]     = useState<ClientGuest | null>(null);
   const [assignTableId,   setAssignTableId]   = useState<string | undefined>(undefined);
   const [sidebarOpen,     setSidebarOpen]     = useState(false);
+
+  // Seat picker state
+  const [seatPicker, setSeatPicker] = useState<{
+    tableId:         string;
+    seatNumber:      number;
+    occupiedGuestId: string | null;
+  } | null>(null);
 
   // ── Loading / error state ─────────────────────────────────────────────────
   const [isAutoAssigning, setIsAutoAssigning] = useState(false);
@@ -80,7 +94,7 @@ export default function SeatingClient({
       const idx = prev.findIndex((t) => t.id === table.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = { ...table, guestIds: prev[idx].guestIds };
+        updated[idx] = { ...table, guestIds: prev[idx].guestIds, seatPositions: prev[idx].seatPositions };
         return updated;
       }
       return [...prev, table];
@@ -89,8 +103,6 @@ export default function SeatingClient({
 
   async function handleDeleteTable(tableId: string) {
     const snapshot = tables;
-    const deleted  = tables.find((t) => t.id === tableId);
-    // Optimistic: remove table, guests return to unassigned automatically via seatedSet
     setTables((prev) => prev.filter((t) => t.id !== tableId));
     try {
       await deleteTableAction(tableId);
@@ -112,10 +124,22 @@ export default function SeatingClient({
     setTables((prev) =>
       prev.map((t) => {
         if (t.id === fromTableId) {
-          return { ...t, guestIds: t.guestIds.filter((id) => id !== guestId) };
+          return {
+            ...t,
+            guestIds:      t.guestIds.filter((id) => id !== guestId),
+            seatPositions: t.seatPositions.filter((sp) => sp.guestId !== guestId),
+          };
         }
         if (t.id === tableId) {
-          return { ...t, guestIds: [...t.guestIds, guestId] };
+          // Assign to next available seat optimistically
+          const usedSeats = new Set(t.seatPositions.map((sp) => sp.seatNumber));
+          let next = 1;
+          while (usedSeats.has(next)) next++;
+          return {
+            ...t,
+            guestIds:      [...t.guestIds, guestId],
+            seatPositions: [...t.seatPositions, { seatNumber: next, guestId }],
+          };
         }
         return t;
       })
@@ -137,7 +161,11 @@ export default function SeatingClient({
     setTables((prev) =>
       prev.map((t) =>
         t.id === tableId
-          ? { ...t, guestIds: t.guestIds.filter((id) => id !== guestId) }
+          ? {
+              ...t,
+              guestIds:      t.guestIds.filter((id) => id !== guestId),
+              seatPositions: t.seatPositions.filter((sp) => sp.guestId !== guestId),
+            }
           : t
       )
     );
@@ -146,6 +174,69 @@ export default function SeatingClient({
     } catch (err) {
       setTables(snapshot);
       showError(err instanceof Error ? err.message : "Failed to unassign guest.");
+    }
+  }
+
+  // ── Seat assignment ───────────────────────────────────────────────────────
+
+  function handleOpenSeatPicker(
+    tableId: string,
+    seatNumber: number,
+    occupiedGuestId: string | null
+  ) {
+    setSeatPicker({ tableId, seatNumber, occupiedGuestId });
+  }
+
+  async function handleAssignToSeat(guestId: string) {
+    if (!seatPicker) return;
+    const { tableId, seatNumber } = seatPicker;
+
+    const snapshot = tables;
+    setTables((prev) =>
+      prev.map((t) => {
+        if (t.id !== tableId) return t;
+        // Remove any existing entry for this seatNumber
+        const filtered = t.seatPositions.filter((sp) => sp.seatNumber !== seatNumber);
+        return {
+          ...t,
+          guestIds:      [...t.guestIds.filter((id) => id !== guestId), guestId],
+          seatPositions: [...filtered, { seatNumber, guestId }].sort(
+            (a, b) => a.seatNumber - b.seatNumber
+          ),
+        };
+      })
+    );
+
+    try {
+      await assignToSeatAction(tableId, seatNumber, guestId);
+    } catch (err) {
+      setTables(snapshot);
+      showError(err instanceof Error ? err.message : "Failed to assign to seat.");
+    }
+  }
+
+  async function handleUnassignFromSeat() {
+    if (!seatPicker?.occupiedGuestId) return;
+    const { tableId, seatNumber, occupiedGuestId } = seatPicker;
+
+    const snapshot = tables;
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id === tableId
+          ? {
+              ...t,
+              guestIds:      t.guestIds.filter((id) => id !== occupiedGuestId),
+              seatPositions: t.seatPositions.filter((sp) => sp.seatNumber !== seatNumber),
+            }
+          : t
+      )
+    );
+
+    try {
+      await assignToSeatAction(tableId, seatNumber, null);
+    } catch (err) {
+      setTables(snapshot);
+      showError(err instanceof Error ? err.message : "Failed to remove from seat.");
     }
   }
 
@@ -178,8 +269,7 @@ export default function SeatingClient({
       const destId = destination.droppableId;
 
       if (srcId === destId) {
-        // Reorder within same zone (cosmetic only for tables; unassigned list reorder)
-        if (srcId === "unassigned") return; // unassigned is derived, no local order needed
+        if (srcId === "unassigned") return;
         return;
       }
 
@@ -188,7 +278,6 @@ export default function SeatingClient({
       const srcTableId  = srcIsTable  ? srcId.slice("table-".length)  : null;
       const destTableId = destIsTable ? destId.slice("table-".length) : null;
 
-      // Capacity guard before optimistic update
       if (destIsTable) {
         const destTable = tables.find((t) => t.id === destTableId);
         if (!destTable) return;
@@ -200,13 +289,10 @@ export default function SeatingClient({
       }
 
       if (srcId === "unassigned" && destIsTable && destTableId) {
-        // Assign from sidebar to table
         void handleAssignToTable(guestId, destTableId, undefined);
       } else if (srcIsTable && destId === "unassigned" && srcTableId) {
-        // Unassign: drag back to sidebar
         void handleUnassignGuest(srcTableId, guestId);
       } else if (srcIsTable && destIsTable && srcTableId && destTableId) {
-        // Move between tables
         void handleAssignToTable(guestId, destTableId, srcTableId);
       }
     },
@@ -217,6 +303,9 @@ export default function SeatingClient({
 
   const seatedCount = seatedSet.size;
   const totalCount  = confirmedGuests.length;
+
+  const seatPickerTable    = seatPicker ? tables.find((t) => t.id === seatPicker.tableId) : null;
+  const seatPickerGuest    = seatPicker?.occupiedGuestId ? guestMap[seatPicker.occupiedGuestId] ?? null : null;
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -256,6 +345,7 @@ export default function SeatingClient({
               const currentTableId = tables.find((t) => t.guestIds.includes(guest.id))?.id;
               handleOpenAssignMenu(guest, currentTableId);
             }}
+            onClickSeat={handleOpenSeatPicker}
           />
         </div>
       </div>
@@ -292,6 +382,19 @@ export default function SeatingClient({
             await handleAssignToTable(assignGuest.id, tableId, assignTableId);
           }}
           currentTableId={assignTableId}
+        />
+      )}
+
+      {seatPicker && seatPickerTable && (
+        <SeatPickerMenu
+          open={!!seatPicker}
+          onOpenChange={(v) => { if (!v) setSeatPicker(null); }}
+          tableName={seatPickerTable.name}
+          seatNumber={seatPicker.seatNumber}
+          occupiedGuest={seatPickerGuest}
+          unassignedGuests={unassignedGuests}
+          onAssign={handleAssignToSeat}
+          onUnassign={handleUnassignFromSeat}
         />
       )}
     </DragDropContext>
