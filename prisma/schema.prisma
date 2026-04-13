@@ -94,7 +94,7 @@ model Wedding {
   budgetCategories BudgetCategory[]
   checklistItems   ChecklistItem[]
   weddingParty     WeddingPartyMember[]
-  // seatingTables    SeatingTable[]
+  seatingTables    SeatingTable[]
   registries       Registry[]
   timelineEvents   TimelineEvent[]
 }
@@ -159,6 +159,7 @@ model Guest {
   updatedAt        DateTime   @updatedAt
 
   dietaryRestrictions DietaryRestriction[]
+  seatingAssignment   SeatingAssignment?
 }
 
 model RsvpResponse {
@@ -325,24 +326,39 @@ model WeddingPartyMember {
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: SEATING MODULE
 // ─────────────────────────────────────────────────────────────────────────────
-// model SeatingTable {
-//   id          String              @id @default(cuid())
-//   weddingId   String
-//   wedding     Wedding             @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-//   name        String
-//   capacity    Int
-//   shape       String              @default("round")
-//   posX        Float               @default(0)
-//   posY        Float               @default(0)
-//   notes       String?
-//   assignments SeatingAssignment[]
-// }
-// model SeatingAssignment {
-//   tableId String
-//   guestId String
-//   table   SeatingTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
-//   @@id([tableId, guestId])
-// }
+
+enum TableShape {
+  ROUND
+  RECTANGULAR
+}
+
+model SeatingTable {
+  id        String     @id @default(cuid())
+  weddingId String
+  wedding   Wedding    @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  name      String
+  capacity  Int
+  shape     TableShape @default(ROUND)
+  notes     String?    @db.Text
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  assignments SeatingAssignment[]
+
+  @@index([weddingId, sortOrder])
+}
+
+model SeatingAssignment {
+  tableId    String
+  guestId    String   @unique
+  seatNumber Int?     // 1-based seat position within the table; null = assigned to table only
+  table      SeatingTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  guest      Guest        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@id([tableId, guestId])
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // P2: REGISTRY MODULE
