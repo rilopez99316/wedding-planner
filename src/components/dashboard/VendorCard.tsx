@@ -2,11 +2,14 @@
 
 import { cn } from "@/lib/utils";
 import { updateVendorStatusAction } from "@/lib/actions/vendors";
-import type { Vendor, VendorPackage } from "@prisma/client";
+import type { Vendor, VendorPackage, VendorDocument } from "@prisma/client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type VendorWithPackages = Vendor & { packages: VendorPackage[] };
+export type VendorWithPackages = Vendor & {
+  packages:  VendorPackage[];
+  documents: VendorDocument[];
+};
 
 type Status = "prospect" | "shortlisted" | "booked" | "rejected";
 
@@ -100,13 +103,23 @@ export default function VendorCard({
           )}
         </div>
 
-        {/* Price range */}
+        {/* Price range + doc count */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {vendor.packages.length === 0
-              ? "No packages yet"
-              : `${vendor.packages.length} package${vendor.packages.length > 1 ? "s" : ""}`}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">
+              {vendor.packages.length === 0
+                ? "No packages yet"
+                : `${vendor.packages.length} package${vendor.packages.length > 1 ? "s" : ""}`}
+            </span>
+            {vendor.documents.length > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[11px] text-gray-400">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                {vendor.documents.length}
+              </span>
+            )}
+          </div>
           <span className="text-[13px] font-semibold text-gray-700">{priceRange(vendor.packages)}</span>
         </div>
 

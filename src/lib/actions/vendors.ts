@@ -45,7 +45,10 @@ export async function getVendorsAction() {
 
   return db.vendor.findMany({
     where:   { weddingId: wedding.id },
-    include: { packages: { orderBy: { createdAt: "asc" } } },
+    include: {
+      packages:  { orderBy: { createdAt: "asc" } },
+      documents: { orderBy: { createdAt: "asc" } },
+    },
     orderBy: { createdAt: "asc" },
   });
 }
@@ -101,7 +104,10 @@ export async function updateVendorAction(id: string, formData: unknown) {
       website:     data.website ?? null,
       notes:       data.notes ?? null,
     },
-    include: { packages: { orderBy: { createdAt: "asc" } } },
+    include: {
+      packages:  { orderBy: { createdAt: "asc" } },
+      documents: { orderBy: { createdAt: "asc" } },
+    },
   });
 
   revalidatePath(REVALIDATE_PATH);
@@ -209,5 +215,52 @@ export async function deletePackageAction(id: string) {
   if (!existing || existing.vendor.weddingId !== wedding.id) throw new Error("Package not found.");
 
   await db.vendorPackage.delete({ where: { id } });
+  revalidatePath(REVALIDATE_PATH);
+}
+
+// ── Vendor Documents ───────────────────────────────────────────────────────
+
+export async function addVendorDocumentAction(
+  vendorId: string,
+  name: string,
+  url: string,
+  fileType: string,
+  fileSize?: number
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+
+  const vendor = await db.vendor.findFirst({ where: { id: vendorId, weddingId: wedding.id } });
+  if (!vendor) throw new Error("Vendor not found.");
+
+  const doc = await db.vendorDocument.create({
+    data: {
+      vendorId,
+      name,
+      url,
+      fileType,
+      fileSize: fileSize ?? null,
+    },
+  });
+
+  revalidatePath(REVALIDATE_PATH);
+  return doc;
+}
+
+export async function deleteVendorDocumentAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+
+  const existing = await db.vendorDocument.findFirst({
+    where:   { id },
+    include: { vendor: true },
+  });
+  if (!existing || existing.vendor.weddingId !== wedding.id) throw new Error("Document not found.");
+
+  await db.vendorDocument.delete({ where: { id } });
   revalidatePath(REVALIDATE_PATH);
 }
