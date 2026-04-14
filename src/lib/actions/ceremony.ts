@@ -384,6 +384,7 @@ export async function updateMusicAction(data: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidatePath("/dashboard/music");
 }
 
 export async function seedDefaultCeremonyAction() {

@@ -98,6 +98,7 @@ model Wedding {
   registries       Registry[]
   timelineEvents   TimelineEvent[]
   ceremonyProgram  CeremonyProgram?
+  musicPlan        MusicPlan?
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -459,6 +460,47 @@ model CeremonyItem {
   updatedAt DateTime @updatedAt
 
   @@index([programId, order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MUSIC MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MusicPlan {
+  id        String   @id @default(cuid())
+  weddingId String   @unique
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  grandEntranceSong        String?
+  firstDanceSong           String?
+  fatherDaughterSong       String?
+  motherSonSong            String?
+  weddingPartyEntranceSong String?
+  cakeCuttingSong          String?
+  lastDanceSong            String?
+  djNotes                  String?  @db.Text
+
+  mustPlayPlaylistUrl   String?
+  doNotPlayPlaylistUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  songs MusicSong[]
+}
+
+model MusicSong {
+  id          String    @id @default(cuid())
+  musicPlanId String
+  musicPlan   MusicPlan @relation(fields: [musicPlanId], references: [id], onDelete: Cascade)
+  title       String
+  artist      String?
+  listType    String    // "must_play" | "do_not_play"
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([musicPlanId, listType, order])
 }
 
 // Gift tracking deferred to Thank-You Tracker module

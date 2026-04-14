@@ -32,6 +32,7 @@ import {
 import AddCeremonyItemDialog, {
   type CeremonyItemRow,
 } from "@/components/dashboard/AddCeremonyItemDialog";
+import SongSearchInput from "@/components/ui/SongSearchInput";
 import Button from "@/components/ui/Button";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -537,24 +538,28 @@ function MusicCard({
 
   return (
     <div className="space-y-4">
-      {[
-        { label: "Processional", note: "♪", value: proc, setter: setProc, placeholder: "e.g. Canon in D — Pachelbel" },
-        { label: "Recessional",  note: "♫", value: rec,  setter: setRec,  placeholder: "e.g. Ode to Joy — Beethoven"  },
-      ].map(({ label, note, value, setter, placeholder }) => (
-        <div key={label}>
-          <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            <span className="text-gray-300 text-sm">{note}</span>
-            {label}
-          </label>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => { setter(e.target.value); setSaved(false); }}
-            placeholder={placeholder}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/50 transition"
-          />
-        </div>
-      ))}
+      <div>
+        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          <span className="text-gray-300 text-sm">♪</span>
+          Processional
+        </label>
+        <SongSearchInput
+          value={proc}
+          onChange={(v) => { setProc(v); setSaved(false); }}
+          placeholder="e.g. Canon in D — Pachelbel"
+        />
+      </div>
+      <div>
+        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          <span className="text-gray-300 text-sm">♫</span>
+          Recessional
+        </label>
+        <SongSearchInput
+          value={rec}
+          onChange={(v) => { setRec(v); setSaved(false); }}
+          placeholder="e.g. Ode to Joy — Beethoven"
+        />
+      </div>
 
       <button
         type="button"
