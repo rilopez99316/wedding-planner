@@ -97,6 +97,7 @@ model Wedding {
   // seatingTables    SeatingTable[]
   registries       Registry[]
   timelineEvents   TimelineEvent[]
+  ceremonyProgram  CeremonyProgram?
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -385,6 +386,45 @@ model TimelineEvent {
   updatedAt  DateTime  @updatedAt
 
   @@index([weddingId, startTime])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P2: CEREMONY MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CeremonyProgram {
+  id        String   @id @default(cuid())
+  weddingId String   @unique
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  partner1Vows     String?  @db.Text
+  partner2Vows     String?  @db.Text
+  processionalSong String?
+  recessionalSong  String?
+  notes            String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CeremonyItem[]
+}
+
+model CeremonyItem {
+  id        String          @id @default(cuid())
+  programId String
+  program   CeremonyProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  type        String   // processional | welcome | reading | prayer | music_moment | vows | rings | unity | pronouncement | recessional | custom
+  title       String
+  description String?  @db.Text
+  assignedTo  String?
+  notes       String?  @db.Text
+  order       Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([programId, order])
 }
 
 // Gift tracking deferred to Thank-You Tracker module
