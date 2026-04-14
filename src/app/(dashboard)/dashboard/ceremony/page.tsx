@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import CeremonyClient from "@/components/dashboard/CeremonyClient";
@@ -7,6 +8,11 @@ import CeremonyClient from "@/components/dashboard/CeremonyClient";
 export default async function CeremonyPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
+  const cookieStore = await cookies();
+  const rawPartner = cookieStore.get("vowsPartner")?.value;
+  const currentPartner: "partner1" | "partner2" | null =
+    rawPartner === "partner1" || rawPartner === "partner2" ? rawPartner : null;
 
   const wedding = await db.wedding.findFirst({
     where: { ownerId: session.user.id },
@@ -35,11 +41,13 @@ export default async function CeremonyPage() {
     >
       <CeremonyClient
         program={program ? {
-          id:               program.id,
-          partner1Vows:     program.partner1Vows,
-          partner2Vows:     program.partner2Vows,
-          processionalSong: program.processionalSong,
-          recessionalSong:  program.recessionalSong,
+          id:                 program.id,
+          partner1HasPin:     !!program.partner1VowsPin,
+          partner2HasPin:     !!program.partner2VowsPin,
+          partner1VowsStatus: program.partner1VowsStatus,
+          partner2VowsStatus: program.partner2VowsStatus,
+          processionalSong:   program.processionalSong,
+          recessionalSong:    program.recessionalSong,
         } : null}
         initialItems={items.map((item) => ({
           id:          item.id,
@@ -53,6 +61,8 @@ export default async function CeremonyPage() {
         }))}
         partner1Name={wedding.partner1Name}
         partner2Name={wedding.partner2Name}
+        currentPartner={currentPartner}
+        weddingId={wedding.id}
       />
     </DashboardShell>
   );
