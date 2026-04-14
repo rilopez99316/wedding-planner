@@ -99,7 +99,11 @@ const navSections: NavSection[] = [
         label: "Ceremony",
         href: "/dashboard/ceremony",
         icon: <Icon path="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />,
-        comingSoon: true,
+      },
+      {
+        label: "Music",
+        href: "/dashboard/music",
+        icon: <Icon path="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />,
       },
       {
         label: "Accommodations",
