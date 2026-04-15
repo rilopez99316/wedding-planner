@@ -101,6 +101,7 @@ model Wedding {
   musicPlan        MusicPlan?
   accommodations   HotelBlock[]
   guestMessages    GuestMessage[]
+  gifts            Gift[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,6 +165,7 @@ model Guest {
 
   dietaryRestrictions DietaryRestriction[]
   seatingAssignment   SeatingAssignment?
+  gifts               Gift[]
 }
 
 model RsvpResponse {
@@ -562,15 +564,34 @@ model GuestMessage {
   @@index([weddingId])
 }
 
-// Gift tracking deferred to Thank-You Tracker module
-// model Gift {
-//   id           String    @id @default(cuid())
-//   registryId   String
-//   registry     Registry  @relation(fields: [registryId], references: [id], onDelete: Cascade)
-//   guestId      String?
-//   description  String
-//   value        Float?
-//   receivedAt   DateTime?
-//   thankYouSent Boolean   @default(false)
-//   thankYouNote String?
-// }
+// ─────────────────────────────────────────────────────────────────────────────
+// THANK-YOU TRACKER MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Gift {
+  id        String  @id @default(cuid())
+  weddingId String
+  wedding   Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  // Giver — optional link to a Guest row; always store a free-text name too
+  guestId   String?
+  guest     Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  giverName String  // free-text (covers companies, family groups, unlisted guests)
+
+  // Gift details
+  description String
+  category    String? // "cash" | "registry" | "experience" | "other"
+  value       Float?
+  receivedAt  DateTime?
+  notes       String? @db.Text
+
+  // Thank-you workflow
+  thankYouStatus String    @default("pending") // "pending" | "drafted" | "sent"
+  thankYouNote   String?   @db.Text
+  thankYouSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([weddingId])
+}
