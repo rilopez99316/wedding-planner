@@ -1,0 +1,542 @@
+import Link from "next/link";
+import { formatDate, formatCurrency } from "@/lib/utils";
+
+// ── Icon paths (Heroicons outline, 24×24) ─────────────────────────────────────
+
+export const ICON_GUESTS    = "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z";
+export const ICON_CHECK     = "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z";
+export const ICON_CLOCK     = "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z";
+export const ICON_MAIL      = "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z";
+export const ICON_BUILDING  = "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4";
+export const ICON_BUDGET    = "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
+export const ICON_HEART     = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z";
+export const ICON_MUSIC     = "M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3";
+export const ICON_SEATING   = "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z";
+export const ICON_CHECKLIST = "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4";
+export const ICON_CEREMONY  = "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z";
+
+// ── Shared SVG wrapper ────────────────────────────────────────────────────────
+
+function Icon({ path, className = "w-[18px] h-[18px]" }: { path: string; className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d={path} />
+    </svg>
+  );
+}
+
+// ── HeroBanner ────────────────────────────────────────────────────────────────
+
+export function HeroBanner({
+  partner1Name,
+  partner2Name,
+  weddingDate,
+  venueName,
+  daysUntilWedding,
+}: {
+  partner1Name: string;
+  partner2Name: string;
+  weddingDate: Date | string;
+  venueName: string | null;
+  daysUntilWedding: number;
+}) {
+  const isToday = daysUntilWedding <= 0;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent-light via-white to-white border border-accent/10 shadow-apple-sm px-8 py-12">
+      {/* Decorative heart — top-right watermark */}
+      <svg
+        className="absolute right-6 top-6 w-28 h-28 text-accent/[0.07] pointer-events-none select-none"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.518 3.318 1 6.628 1c1.684 0 3.291.956 4.372 2.417C12.072 1.956 13.679 1 15.372 1 18.682 1 21 3.518 21 7.191c0 4.105-5.37 8.863-11 14.402z" />
+      </svg>
+
+      {/* Decorative rings — bottom-left watermark */}
+      <svg
+        className="absolute -left-8 -bottom-8 w-44 h-44 text-accent/[0.05] pointer-events-none select-none"
+        viewBox="0 0 100 100"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <circle cx="50" cy="50" r="40" />
+        <circle cx="50" cy="50" r="24" />
+      </svg>
+
+      <div className="relative flex flex-col items-center text-center gap-3">
+        {/* Couple names — the emotional anchor */}
+        <h1 className="font-serif text-display-sm text-gray-900">
+          {partner1Name} & {partner2Name}
+        </h1>
+
+        {/* Date + venue */}
+        <p className="text-sm text-gray-500 font-medium tracking-wide">
+          {formatDate(weddingDate)}
+          {venueName ? <> &middot; {venueName}</> : null}
+        </p>
+
+        {/* Countdown */}
+        {isToday ? (
+          <div className="mt-3 px-10 py-5 rounded-2xl bg-accent text-white shadow-apple-md">
+            <div className="text-5xl font-semibold leading-none">Today! 🎉</div>
+            <div className="text-sm font-medium text-white/80 mt-1.5">Your wedding day is here</div>
+          </div>
+        ) : (
+          <div className="mt-3 px-12 py-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-accent/15 shadow-apple-md">
+            <div className="text-7xl font-semibold tabular-nums text-accent leading-none">
+              {daysUntilWedding}
+            </div>
+            <div className="text-sm font-medium text-gray-500 mt-2">days to go</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── PrimaryStatCard ───────────────────────────────────────────────────────────
+
+export function PrimaryStatCard({
+  label,
+  value,
+  sub,
+  iconPath,
+  iconBg,
+  iconColor,
+  borderColor,
+}: {
+  label: string;
+  value: string | number;
+  sub: string;
+  iconPath: string;
+  iconBg: string;
+  iconColor: string;
+  borderColor: string;
+}) {
+  return (
+    <div className={`bg-white rounded-xl shadow-apple-sm border border-gray-100 border-l-4 ${borderColor} p-6 flex flex-col`}>
+      <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-4 ${iconBg} ${iconColor}`}>
+        <Icon path={iconPath} />
+      </div>
+      <div className="text-4xl font-semibold text-gray-900 tabular-nums tracking-tight leading-none mb-2">
+        {value}
+      </div>
+      <div className="text-sm font-semibold text-gray-700">{label}</div>
+      <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
+    </div>
+  );
+}
+
+// ── JourneyCard ───────────────────────────────────────────────────────────────
+
+export type JourneyStatus = "on-track" | "in-progress" | "not-started";
+
+const STATUS_CONFIG: Record<JourneyStatus, { label: string; className: string }> = {
+  "on-track":    { label: "On track",    className: "bg-green-50 text-green-700" },
+  "in-progress": { label: "In progress", className: "bg-amber-50 text-amber-700" },
+  "not-started": { label: "Not started", className: "bg-gray-100 text-gray-500"  },
+};
+
+export function JourneyCard({
+  label,
+  stat,
+  status,
+  href,
+  iconPath,
+  iconBg,
+  iconColor,
+}: {
+  label: string;
+  stat: string;
+  status: JourneyStatus;
+  href: string;
+  iconPath: string;
+  iconBg: string;
+  iconColor: string;
+}) {
+  const s = STATUS_CONFIG[status];
+
+  return (
+    <Link
+      href={href}
+      className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm p-4 flex flex-col gap-3 hover:shadow-apple-md hover:border-accent/20 transition-all duration-200"
+    >
+      {/* Icon + arrow */}
+      <div className="flex items-start justify-between">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBg} ${iconColor}`}>
+          <Icon path={iconPath} className="w-4 h-4" />
+        </div>
+        <span className="text-sm text-gray-300 group-hover:text-accent transition-colors leading-none mt-0.5">
+          →
+        </span>
+      </div>
+
+      {/* Headline stat */}
+      <div className="text-xl font-semibold text-gray-900 leading-tight">{stat}</div>
+
+      {/* Label + status badge */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-gray-500 truncate">{label}</span>
+        <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${s.className}`}>
+          {s.label}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+// ── GradientProgressBar ───────────────────────────────────────────────────────
+
+export function GradientProgressBar({
+  pct,
+  completed,
+  total,
+}: {
+  pct: number;
+  completed: number;
+  total: number;
+}) {
+  const milestones = [25, 50, 75, 100];
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold text-gray-900">Planning progress</span>
+        <span className="text-sm font-semibold text-accent">{pct}%</span>
+      </div>
+
+      {/* Bar with milestone tick marks */}
+      <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-700"
+          style={{ width: `${pct}%` }}
+        />
+        {milestones.map((m) => (
+          <div
+            key={m}
+            className={`absolute top-0 bottom-0 w-px transition-colors ${pct >= m ? "bg-white/60" : "bg-gray-200"}`}
+            style={{ left: `${m}%` }}
+          />
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          {completed} of {total} tasks complete
+        </p>
+        {pct >= 100 && (
+          <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            All done!
+          </span>
+        )}
+        {pct >= 75 && pct < 100 && (
+          <span className="text-xs font-semibold text-accent bg-accent-light px-2 py-0.5 rounded-full">
+            Almost there
+          </span>
+        )}
+        {pct >= 50 && pct < 75 && (
+          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full font-medium">
+            Halfway there
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── BudgetBar ─────────────────────────────────────────────────────────────────
+
+export function BudgetBar({
+  totalBudget,
+  estimatedSpend,
+  amountPaid,
+}: {
+  totalBudget: number;
+  estimatedSpend: number;
+  amountPaid: number;
+}) {
+  const estimatedPct = totalBudget > 0 ? Math.min(100, Math.round((estimatedSpend / totalBudget) * 100)) : 0;
+  const paidPct      = totalBudget > 0 ? Math.min(100, Math.round((amountPaid / totalBudget) * 100)) : 0;
+  const isOverBudget = estimatedSpend > totalBudget;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-semibold text-gray-900">Budget snapshot</span>
+        <Link href="/dashboard/budget" className="text-xs text-accent hover:underline font-medium">
+          Manage →
+        </Link>
+      </div>
+
+      {/* Two-layer bar: estimated (light) behind paid (solid) */}
+      <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${isOverBudget ? "bg-red-200" : "bg-accent/25"}`}
+          style={{ width: `${estimatedPct}%` }}
+        />
+        <div
+          className="absolute inset-y-0 left-0 rounded-full bg-accent transition-all duration-700"
+          style={{ width: `${paidPct}%` }}
+        />
+      </div>
+
+      {/* Three stat columns */}
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div>
+          <div className="text-sm font-semibold text-gray-900">{formatCurrency(amountPaid)}</div>
+          <div className="flex items-center justify-center gap-1 mt-1">
+            <div className="w-2 h-2 rounded-full bg-accent" />
+            <span className="text-xs text-gray-400">Paid</span>
+          </div>
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-gray-900">{formatCurrency(estimatedSpend)}</div>
+          <div className="flex items-center justify-center gap-1 mt-1">
+            <div className="w-2 h-2 rounded-full bg-accent/30" />
+            <span className="text-xs text-gray-400">Estimated</span>
+          </div>
+        </div>
+        <div>
+          <div className={`text-sm font-semibold ${isOverBudget ? "text-red-600" : "text-gray-900"}`}>
+            {formatCurrency(totalBudget)}
+          </div>
+          <div className="flex items-center justify-center gap-1 mt-1">
+            <div className="w-2 h-2 rounded-full bg-gray-300" />
+            <span className="text-xs text-gray-400">Total budget</span>
+          </div>
+        </div>
+      </div>
+
+      {isOverBudget && (
+        <p className="text-xs text-red-600 font-medium text-center">
+          Estimated spend exceeds your budget by {formatCurrency(estimatedSpend - totalBudget)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── RsvpDeadlineAlert ─────────────────────────────────────────────────────────
+
+export function RsvpDeadlineAlert({ daysUntilDeadline }: { daysUntilDeadline: number }) {
+  if (daysUntilDeadline <= 0 || daysUntilDeadline > 14) return null;
+
+  const isUrgent = daysUntilDeadline <= 3;
+  const ICON_WARNING = "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z";
+
+  return (
+    <div className={`rounded-xl px-5 py-4 flex items-center gap-4 border ${
+      isUrgent ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
+    }`}>
+      <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+        isUrgent ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"
+      }`}>
+        <Icon path={ICON_WARNING} className="w-[18px] h-[18px]" />
+      </div>
+      <p className={`text-sm font-medium ${isUrgent ? "text-red-800" : "text-amber-800"}`}>
+        RSVP deadline is{" "}
+        <strong>
+          {daysUntilDeadline === 1 ? "tomorrow" : `in ${daysUntilDeadline} days`}
+        </strong>{" "}
+        —{" "}
+        <Link href="/dashboard/invitations" className="underline underline-offset-2 hover:no-underline">
+          send reminders
+        </Link>{" "}
+        to guests who haven&apos;t responded.
+      </p>
+    </div>
+  );
+}
+
+// ── QuickActionLink ───────────────────────────────────────────────────────────
+
+export function QuickActionLink({
+  label,
+  description,
+  href,
+  iconPath,
+  iconBg,
+  iconColor,
+}: {
+  label: string;
+  description: string;
+  href: string;
+  iconPath: string;
+  iconBg: string;
+  iconColor: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 flex flex-col gap-3 hover:shadow-apple-md hover:border-accent/20 transition-all duration-200"
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
+        <Icon path={iconPath} className="w-5 h-5" />
+      </div>
+      <div>
+        <div className="text-sm font-semibold text-gray-900 group-hover:text-accent transition-colors">
+          {label}
+        </div>
+        <div className="text-xs text-gray-400 mt-0.5">{description}</div>
+      </div>
+    </Link>
+  );
+}
+
+// ── buildJourneyCards ─────────────────────────────────────────────────────────
+
+export interface JourneyCardDef {
+  label: string;
+  stat: string;
+  status: JourneyStatus;
+  href: string;
+  iconPath: string;
+  iconBg: string;
+  iconColor: string;
+}
+
+export function buildJourneyCards(stats: {
+  checklistPct: number;
+  totalChecklist: number;
+  completedChecklist: number;
+  bookedVendors: number;
+  totalVendors: number;
+  totalBudget: number;
+  estimatedSpend: number;
+  budgetRemaining: number;
+  tableCount: number;
+  assignedSeats: number;
+  confirmedAttending: number;
+  hotelCount: number;
+  totalGifts: number;
+  thankYouSent: number;
+  thankYouPending: number;
+  totalMessagesSent: number;
+  weddingPartyCount: number;
+  musicConfigured: boolean;
+  ceremonyItemCount: number;
+  vowsStatus: { partner1: string; partner2: string };
+}): JourneyCardDef[] {
+  return [
+    {
+      label: "Checklist",
+      stat: stats.totalChecklist === 0 ? "No tasks yet" : `${stats.checklistPct}% done`,
+      status: stats.totalChecklist === 0
+        ? "not-started"
+        : stats.checklistPct === 100
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/checklist",
+      iconPath: ICON_CHECKLIST,
+      iconBg: "bg-rose-50",
+      iconColor: "text-rose-600",
+    },
+    {
+      label: "Vendors",
+      stat: stats.totalVendors === 0 ? "None added" : `${stats.bookedVendors} / ${stats.totalVendors} booked`,
+      status: stats.totalVendors === 0
+        ? "not-started"
+        : stats.bookedVendors === stats.totalVendors
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/vendors",
+      iconPath: ICON_BUILDING,
+      iconBg: "bg-green-50",
+      iconColor: "text-green-600",
+    },
+    {
+      label: "Budget",
+      stat: stats.totalBudget === 0
+        ? "Not set"
+        : stats.budgetRemaining >= 0
+        ? `${formatCurrency(stats.budgetRemaining)} left`
+        : `${formatCurrency(Math.abs(stats.budgetRemaining))} over`,
+      status: stats.totalBudget === 0
+        ? "not-started"
+        : stats.estimatedSpend <= stats.totalBudget
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/budget",
+      iconPath: ICON_BUDGET,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
+    },
+    {
+      label: "Seating",
+      stat: stats.tableCount === 0 ? "No tables" : `${stats.assignedSeats} seated`,
+      status: stats.tableCount === 0
+        ? "not-started"
+        : stats.confirmedAttending > 0 && stats.assignedSeats >= stats.confirmedAttending
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/seating",
+      iconPath: ICON_SEATING,
+      iconBg: "bg-indigo-50",
+      iconColor: "text-indigo-600",
+    },
+    {
+      label: "Accommodations",
+      stat: stats.hotelCount === 0 ? "None added" : `${stats.hotelCount} hotel${stats.hotelCount !== 1 ? "s" : ""}`,
+      status: stats.hotelCount === 0 ? "not-started" : "on-track",
+      href: "/dashboard/accommodations",
+      iconPath: ICON_BUILDING,
+      iconBg: "bg-sky-50",
+      iconColor: "text-sky-600",
+    },
+    {
+      label: "Thank-Yous",
+      stat: stats.totalGifts === 0 ? "No gifts yet" : `${stats.thankYouSent} / ${stats.totalGifts} sent`,
+      status: stats.totalGifts === 0
+        ? "not-started"
+        : stats.thankYouPending === 0
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/thank-you",
+      iconPath: ICON_HEART,
+      iconBg: "bg-pink-50",
+      iconColor: "text-pink-600",
+    },
+    {
+      label: "Communications",
+      stat: stats.totalMessagesSent === 0 ? "None sent" : `${stats.totalMessagesSent} sent`,
+      status: stats.totalMessagesSent === 0 ? "not-started" : "on-track",
+      href: "/dashboard/communications",
+      iconPath: ICON_MAIL,
+      iconBg: "bg-purple-50",
+      iconColor: "text-purple-600",
+    },
+    {
+      label: "Wedding Party",
+      stat: stats.weddingPartyCount === 0 ? "None added" : `${stats.weddingPartyCount} member${stats.weddingPartyCount !== 1 ? "s" : ""}`,
+      status: stats.weddingPartyCount === 0 ? "not-started" : "on-track",
+      href: "/dashboard/wedding-party",
+      iconPath: ICON_HEART,
+      iconBg: "bg-rose-50",
+      iconColor: "text-rose-500",
+    },
+    {
+      label: "Music",
+      stat: stats.musicConfigured ? "First dance set" : "Not started",
+      status: stats.musicConfigured ? "on-track" : "not-started",
+      href: "/dashboard/music",
+      iconPath: ICON_MUSIC,
+      iconBg: "bg-violet-50",
+      iconColor: "text-violet-600",
+    },
+    {
+      label: "Ceremony",
+      stat: stats.ceremonyItemCount === 0 ? "No program yet" : `${stats.ceremonyItemCount} program items`,
+      status: stats.ceremonyItemCount === 0
+        ? "not-started"
+        : stats.vowsStatus.partner1 === "done" && stats.vowsStatus.partner2 === "done"
+        ? "on-track"
+        : "in-progress",
+      href: "/dashboard/ceremony",
+      iconPath: ICON_CEREMONY,
+      iconBg: "bg-orange-50",
+      iconColor: "text-orange-500",
+    },
+  ];
+}

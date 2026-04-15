@@ -7,6 +7,11 @@ import { z } from "zod";
 
 const REVALIDATE_PATH = "/dashboard/budget";
 
+function revalidateBudget() {
+  revalidatePath(REVALIDATE_PATH);
+  revalidatePath("/dashboard");
+}
+
 async function getWeddingForUser(userId: string) {
   const wedding = await db.wedding.findFirst({ where: { ownerId: userId } });
   if (!wedding) throw new Error("Wedding not found.");
@@ -52,7 +57,7 @@ export async function updateTotalBudgetAction(amount: number) {
     data: { totalBudget: parsed.data.amount },
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 // ── Default categories (seeded on first visit) ─────────────────────────────
@@ -83,7 +88,7 @@ export async function initBudgetCategoriesAction() {
     data: DEFAULT_CATEGORIES.map((d) => ({ ...d, weddingId: wedding.id })),
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 // ── Categories ──────────────────────────────────────────────────────────────
@@ -112,7 +117,7 @@ export async function addBudgetCategoryAction(formData: unknown) {
     },
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 export async function updateBudgetCategoryAction(id: string, formData: unknown) {
@@ -134,7 +139,7 @@ export async function updateBudgetCategoryAction(id: string, formData: unknown) 
     data: { name: parsed.data.name, color: parsed.data.color },
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 export async function deleteBudgetCategoryAction(id: string) {
@@ -151,7 +156,7 @@ export async function deleteBudgetCategoryAction(id: string) {
   if (existing._count.items > 0) throw new Error("Remove all items before deleting this category.");
 
   await db.budgetCategory.delete({ where: { id } });
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 // ── Budget items ────────────────────────────────────────────────────────────
@@ -186,7 +191,7 @@ export async function addBudgetItemAction(formData: unknown) {
     },
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 export async function updateBudgetItemAction(id: string, formData: unknown) {
@@ -224,7 +229,7 @@ export async function updateBudgetItemAction(id: string, formData: unknown) {
     },
   });
 
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
 
 export async function deleteBudgetItemAction(id: string) {
@@ -239,5 +244,5 @@ export async function deleteBudgetItemAction(id: string) {
   if (!existing) throw new Error("Item not found.");
 
   await db.budgetItem.delete({ where: { id } });
-  revalidatePath(REVALIDATE_PATH);
+  revalidateBudget();
 }
