@@ -99,6 +99,7 @@ model Wedding {
   timelineEvents   TimelineEvent[]
   ceremonyProgram  CeremonyProgram?
   musicPlan        MusicPlan?
+  accommodations   HotelBlock[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -501,6 +502,34 @@ model MusicSong {
   updatedAt   DateTime  @updatedAt
 
   @@index([musicPlanId, listType, order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCOMMODATIONS MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model HotelBlock {
+  id            String    @id @default(cuid())
+  weddingId     String
+  wedding       Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  name          String
+  address       String?
+  bookingUrl    String?
+  promoCode     String?
+  roomsTotal    Int?
+  roomsBooked   Int       @default(0)
+  pricePerNight Float?
+  checkInDate   DateTime?
+  checkOutDate  DateTime?
+  deadline      DateTime?
+  notes         String?   @db.Text
+  order         Int       @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([weddingId, order])
 }
 
 // Gift tracking deferred to Thank-You Tracker module
