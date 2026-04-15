@@ -105,7 +105,7 @@ async function getWeddingStats(userId: string) {
   const amountPaid     = allBudgetItems.reduce((s, i) => s + i.amountPaid, 0);
   const totalBudget    = wedding.totalBudget ?? 0;
   const budgetRemaining = totalBudget - estimatedSpend;
-  const budgetUsedPct  = estimatedSpend > 0 ? Math.round((amountPaid / estimatedSpend) * 100) : 0;
+  const budgetUsedPct  = totalBudget > 0 ? Math.round((amountPaid / totalBudget) * 100) : 0;
 
   // ── Gifts / Thank-You ────────────────────────────────────────────────────────
   const totalGifts     = wedding.gifts.length;
@@ -224,7 +224,7 @@ export default async function DashboardPage() {
       label: stats.totalBudget > 0 ? "Budget paid" : "Budget",
       value: stats.totalBudget > 0 ? `${stats.budgetUsedPct}%` : "—",
       sub: stats.totalBudget > 0
-        ? `of estimated spend`
+        ? `of total budget`
         : "No budget set yet",
       iconPath: ICON_BUDGET,
       iconBg: "bg-amber-50",
