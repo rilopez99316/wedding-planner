@@ -100,6 +100,7 @@ model Wedding {
   ceremonyProgram  CeremonyProgram?
   musicPlan        MusicPlan?
   accommodations   HotelBlock[]
+  guestMessages    GuestMessage[]
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -530,6 +531,35 @@ model HotelBlock {
   updatedAt     DateTime  @updatedAt
 
   @@index([weddingId, order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMUNICATIONS MODULE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model GuestMessage {
+  id              String    @id @default(cuid())
+  weddingId       String
+  wedding         Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  subject         String?
+  body            String    @db.Text
+  channel         String    // "email" | "sms"
+  status          String    @default("draft") // "draft" | "scheduled" | "sending" | "sent" | "failed"
+
+  recipientFilter String    @default("all") // "all" | "attending" | "not_responded" | "declined"
+  recipientCount  Int?
+
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+
+  totalSent       Int       @default(0)
+  totalFailed     Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([weddingId])
 }
 
 // Gift tracking deferred to Thank-You Tracker module
