@@ -1,4 +1,39 @@
-import ModulePlaceholder from "@/components/dashboard/ModulePlaceholder";
-export default function ThankYouPage() {
-  return <ModulePlaceholder title="Thank-You Tracker" icon="💌" description="Log every gift you receive, track which thank-you notes you've sent, and generate personalized draft messages." />;
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import DashboardShell from "@/components/dashboard/DashboardShell";
+import ThankYouClient from "@/components/dashboard/ThankYouClient";
+
+export default async function ThankYouPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const wedding = await db.wedding.findFirst({ where: { ownerId: session.user.id } });
+  if (!wedding) redirect("/onboarding");
+
+  const gifts = await db.gift.findMany({
+    where: { weddingId: wedding.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const total = gifts.length;
+  const sent = gifts.filter((g) => g.thankYouStatus === "sent").length;
+  const pending = total - sent;
+  const totalValue = gifts.reduce((s, g) => s + (g.value ?? 0), 0);
+  const valueStr = totalValue > 0
+    ? ` · $${totalValue.toLocaleString("en-US", { maximumFractionDigits: 0 })} received`
+    : "";
+
+  const subheading =
+    total === 0
+      ? "Log every gift and keep track of your thank-you notes"
+      : sent === total
+      ? `All ${total} notes sent${valueStr}`
+      : `${sent} of ${total} notes sent · ${pending} pending${valueStr}`;
+
+  return (
+    <DashboardShell heading="Thank-You Tracker" subheading={subheading}>
+      <ThankYouClient gifts={gifts} />
+    </DashboardShell>
+  );
 }
