@@ -310,6 +310,7 @@ export default async function DashboardPage() {
           weddingDate={wedding.weddingDate}
           venueName={wedding.venueName}
           daysUntilWedding={stats.daysUntilWedding}
+          coverPhotoUrl={wedding.coverPhotoUrl}
         />
 
         {/* Four primary stat cards */}
