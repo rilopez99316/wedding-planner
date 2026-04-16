@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import {
   addRegistryAction,
   updateRegistryAction,
@@ -45,6 +45,48 @@ const emptyForm = (): FormState => ({
   isPublic: true,
 });
 
+// ── Icons ──────────────────────────────────────────────────────────────────
+
+function GiftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
+    </svg>
+  );
+}
+
+function HeartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  );
+}
+
+function ExternalLinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function RegistryClient({ registries }: RegistryClientProps) {
@@ -65,6 +107,7 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filtered = registries.filter((r) => r.type === activeTab);
   const presets = activeTab === "REGISTRY" ? REGISTRY_STORES : FUND_PLATFORMS;
@@ -147,11 +190,11 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this entry?")) return;
     setDeletingId(id);
     setError(null);
     try {
       await deleteRegistryAction(id);
+      setConfirmDeleteId(null);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to delete entry.");
@@ -175,29 +218,22 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
     }
   }
 
-  // ── Render helpers ─────────────────────────────────────────────────────
+  // ── Form sub-components ────────────────────────────────────────────────
 
-  function StoreSelect({
-    form,
-    onChange,
-  }: {
-    form: FormState;
-    onChange: (patch: Partial<FormState>) => void;
-  }) {
+  const fieldCls = "w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent bg-white transition-colors";
+  const labelCls = "block text-xs font-medium text-gray-500 mb-1";
+
+  function StoreSelect({ form, onChange }: { form: FormState; onChange: (patch: Partial<FormState>) => void }) {
     return (
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-gray-500">
-          {activeTab === "REGISTRY" ? "Store" : "Platform"}
-        </label>
+      <div>
+        <label className={labelCls}>{activeTab === "REGISTRY" ? "Store" : "Platform"}</label>
         <select
           value={form.store}
           onChange={(e) => onChange({ store: e.target.value, customStore: "" })}
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white outline-none focus:border-accent"
+          className={fieldCls}
         >
           <option value="">Select…</option>
-          {presets.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
+          {presets.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
         {form.store === "Custom" && (
           <input
@@ -205,65 +241,45 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
             value={form.customStore}
             onChange={(e) => onChange({ customStore: e.target.value })}
             placeholder="Store or platform name"
-            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent"
+            className={cn(fieldCls, "mt-2")}
           />
         )}
       </div>
     );
   }
 
-  function UrlInput({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) {
+  function UrlInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-gray-500">URL</label>
+      <div>
+        <label className={labelCls}>URL</label>
         <input
           type="url"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://..."
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent"
+          className={fieldCls}
         />
       </div>
     );
   }
 
-  function DescriptionInput({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) {
+  function DescriptionInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-gray-500">
-          Description <span className="text-gray-400 font-normal">(optional)</span>
-        </label>
+      <div>
+        <label className={labelCls}>Description <span className="text-gray-400 font-normal">(optional)</span></label>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={activeTab === "FUND" ? "e.g. Honeymoon in Italy" : ""}
           maxLength={200}
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent"
+          className={fieldCls}
         />
       </div>
     );
   }
 
-  function PublicToggle({
-    value,
-    onChange,
-  }: {
-    value: boolean;
-    onChange: (v: boolean) => void;
-  }) {
+  function PublicToggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
     return (
       <div className="flex items-center gap-2">
         <button
@@ -271,21 +287,11 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
           role="switch"
           aria-checked={value}
           onClick={() => onChange(!value)}
-          className={cn(
-            "relative w-9 h-5 rounded-full transition-colors",
-            value ? "bg-accent" : "bg-gray-200"
-          )}
+          className={cn("relative w-9 h-5 rounded-full transition-colors", value ? "bg-accent" : "bg-gray-200")}
         >
-          <span
-            className={cn(
-              "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
-              value && "translate-x-4"
-            )}
-          />
+          <span className={cn("absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform", value && "translate-x-4")} />
         </button>
-        <span className="text-xs text-gray-500">
-          {value ? "Visible to guests" : "Hidden from guests"}
-        </span>
+        <span className="text-xs text-gray-500">{value ? "Visible to guests" : "Hidden from guests"}</span>
       </div>
     );
   }
@@ -296,7 +302,7 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
     <div className="max-w-2xl">
       {/* Error banner */}
       {error && (
-        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
+        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="shrink-0 text-red-400 hover:text-red-600">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -308,22 +314,39 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
 
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
-          {(["REGISTRY", "FUND"] as RegistryType[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => { setActiveTab(tab); cancelAdd(); cancelEdit(); setError(null); }}
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-                activeTab === tab
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              {tab === "REGISTRY" ? "Gift Registries" : "Funds & Donations"}
-            </button>
-          ))}
+        {/* Pill tabs */}
+        <div className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-2xl">
+          {(["REGISTRY", "FUND"] as RegistryType[]).map((tab) => {
+            const count = registries.filter((r) => r.type === tab).length;
+            return (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); cancelAdd(); cancelEdit(); setError(null); }}
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-150",
+                  activeTab === tab
+                    ? "bg-white text-gray-900 shadow-apple-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                {tab === "REGISTRY"
+                  ? <GiftIcon className="w-4 h-4" />
+                  : <HeartIcon className="w-4 h-4" />
+                }
+                {tab === "REGISTRY" ? "Gift Registries" : "Funds"}
+                {count > 0 && (
+                  <span className={cn(
+                    "text-[11px] font-semibold rounded-full px-1.5 py-0.5 min-w-[18px] text-center",
+                    activeTab === tab ? "bg-accent text-white" : "bg-gray-200 text-gray-500"
+                  )}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
+
         <Button
           size="sm"
           variant="primary"
@@ -334,133 +357,214 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
         </Button>
       </div>
 
-      {/* Add form */}
-      {adding && (
-        <div className="mb-4 bg-white rounded-lg border border-gray-200 shadow-apple-sm p-4 space-y-3">
-          <p className="text-sm font-medium text-gray-700">
-            {activeTab === "REGISTRY" ? "New Registry" : "New Fund"}
-          </p>
-          <StoreSelect form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
-          <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
-          {activeTab === "FUND" && (
-            <DescriptionInput
-              value={addForm.description}
-              onChange={(v) => setAddForm((f) => ({ ...f, description: v }))}
-            />
-          )}
-          <PublicToggle
-            value={addForm.isPublic}
-            onChange={(v) => setAddForm((f) => ({ ...f, isPublic: v }))}
-          />
-          <div className="flex gap-2 pt-1">
-            <Button size="sm" variant="primary" loading={saving} onClick={handleAdd}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={cancelAdd}>Cancel</Button>
-          </div>
-        </div>
-      )}
+      {/* Add form — animated */}
+      <AnimatePresence>
+        {adding && (
+          <motion.div
+            key="add-form"
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.99 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="mb-5 bg-white rounded-2xl border border-gray-200 shadow-apple-md overflow-hidden"
+          >
+            <div className="px-5 pt-4 pb-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">
+                {activeTab === "REGISTRY" ? "Add Gift Registry" : "Add Fund"}
+              </p>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <StoreSelect form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
+                <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
+              </div>
+              {activeTab === "FUND" && (
+                <DescriptionInput
+                  value={addForm.description}
+                  onChange={(v) => setAddForm((f) => ({ ...f, description: v }))}
+                />
+              )}
+              <div className="flex items-center justify-between pt-1">
+                <PublicToggle value={addForm.isPublic} onChange={(v) => setAddForm((f) => ({ ...f, isPublic: v }))} />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="primary" loading={saving} onClick={handleAdd}>Save</Button>
+                  <Button size="sm" variant="ghost" onClick={cancelAdd}>Cancel</Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* List */}
       {filtered.length === 0 && !adding ? (
-        <div className="flex flex-col items-center justify-center py-14 text-center bg-white rounded-lg border border-dashed border-gray-200">
-          <p className="text-sm font-medium text-gray-500 mb-1">
-            {activeTab === "REGISTRY" ? "No registries added yet" : "No funds added yet"}
-          </p>
-          <p className="text-xs text-gray-400">
+        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
+          <div className={cn(
+            "w-12 h-12 rounded-xl flex items-center justify-center mb-4",
+            activeTab === "REGISTRY" ? "bg-accent-light text-accent" : "bg-red-50 text-red-400"
+          )}>
             {activeTab === "REGISTRY"
-              ? "Add links to Amazon, Zola, Target, and more"
-              : "Add links to Honeyfund, PayPal.me, GoFundMe, and more"}
+              ? <GiftIcon className="w-6 h-6" />
+              : <HeartIcon className="w-6 h-6" />
+            }
+          </div>
+          <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
+            {activeTab === "REGISTRY" ? "No registries yet" : "No funds yet"}
+          </h3>
+          <p className="text-sm text-gray-500 max-w-xs leading-relaxed mb-6">
+            {activeTab === "REGISTRY"
+              ? "Add links to Amazon, Zola, Target, and more."
+              : "Add links to Honeyfund, PayPal.me, GoFundMe, and more."}
           </p>
+          <Button size="sm" variant="primary" onClick={() => setAdding(true)}>
+            {activeTab === "REGISTRY" ? "Add Registry" : "Add Fund"}
+          </Button>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((entry) => {
-            const isEditing = editingId === entry.id;
-            return (
-              <div
-                key={entry.id}
-                className="bg-white rounded-lg border border-gray-100 shadow-apple-sm overflow-hidden"
-              >
-                {isEditing ? (
-                  <div className="p-4 space-y-3">
-                    <StoreSelect form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
-                    <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
-                    {activeTab === "FUND" && (
-                      <DescriptionInput
-                        value={editForm.description}
-                        onChange={(v) => setEditForm((f) => ({ ...f, description: v }))}
-                      />
-                    )}
-                    <PublicToggle
-                      value={editForm.isPublic}
-                      onChange={(v) => setEditForm((f) => ({ ...f, isPublic: v }))}
-                    />
-                    <div className="flex gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        loading={savingEditId === entry.id}
-                        onClick={() => handleSaveEdit(entry.id)}
-                      >
-                        Save
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{entry.store}</p>
-                      {entry.description && (
-                        <p className="text-xs text-gray-400 truncate">{entry.description}</p>
+        <AnimatePresence mode="popLayout">
+          <div className="space-y-2">
+            {filtered.map((entry) => {
+              const isEditing = editingId === entry.id;
+              const isConfirmingDelete = confirmDeleteId === entry.id;
+
+              return (
+                <motion.div
+                  key={entry.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm hover:shadow-apple-md transition-shadow overflow-hidden"
+                >
+                  {isEditing ? (
+                    <div className="p-4 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <StoreSelect form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
+                        <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
+                      </div>
+                      {activeTab === "FUND" && (
+                        <DescriptionInput
+                          value={editForm.description}
+                          onChange={(v) => setEditForm((f) => ({ ...f, description: v }))}
+                        />
                       )}
-                      <a
-                        href={entry.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-accent hover:underline truncate block max-w-xs"
-                      >
-                        {entry.url}
-                      </a>
+                      <div className="flex items-center justify-between pt-1">
+                        <PublicToggle value={editForm.isPublic} onChange={(v) => setEditForm((f) => ({ ...f, isPublic: v }))} />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            loading={savingEditId === entry.id}
+                            onClick={() => handleSaveEdit(entry.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={cancelEdit}>Cancel</Button>
+                        </div>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <div className="relative flex items-start gap-4 px-5 py-4">
+                        {/* Store info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[15px] font-semibold text-gray-900 mb-0.5">{entry.store}</p>
+                          {entry.description && (
+                            <p className="text-sm text-gray-400 italic mb-1">{entry.description}</p>
+                          )}
+                          <a
+                            href={entry.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-accent hover:underline font-medium"
+                          >
+                            Visit
+                            <ExternalLinkIcon className="w-3 h-3" />
+                          </a>
+                        </div>
 
-                    {/* Public badge (clickable toggle) */}
-                    <button
-                      onClick={() => handleTogglePublic(entry)}
-                      className="shrink-0"
-                      title={entry.isPublic ? "Click to hide from guests" : "Click to show to guests"}
-                    >
-                      <Badge variant={entry.isPublic ? "success" : "default"}>
-                        {entry.isPublic ? "Public" : "Hidden"}
-                      </Badge>
-                    </button>
+                        {/* Public toggle badge */}
+                        <button
+                          onClick={() => handleTogglePublic(entry)}
+                          title={entry.isPublic ? "Visible to guests — click to hide" : "Hidden — click to show"}
+                          className={cn(
+                            "shrink-0 flex items-center gap-1.5 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors",
+                            entry.isPublic
+                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
+                          )}
+                        >
+                          {entry.isPublic
+                            ? <CheckCircleIcon className="w-3.5 h-3.5" />
+                            : <LockIcon className="w-3.5 h-3.5" />
+                          }
+                          {entry.isPublic ? "Public" : "Hidden"}
+                        </button>
 
-                    {/* Edit */}
-                    <button
-                      onClick={() => startEdit(entry)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
+                        {/* Hover actions */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0">
+                          <button
+                            onClick={() => startEdit(entry)}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(isConfirmingDelete ? null : entry.id)}
+                            disabled={deletingId === entry.id}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+                            title="Delete"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
 
-                    {/* Delete */}
-                    <button
-                      disabled={deletingId === entry.id}
-                      onClick={() => handleDelete(entry.id)}
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40 shrink-0"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                      {/* Inline delete confirmation */}
+                      <AnimatePresence>
+                        {isConfirmingDelete && (
+                          <motion.div
+                            key="confirm"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.18 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="flex items-center justify-between gap-3 px-5 py-3 bg-red-50 border-t border-red-100">
+                              <p className="text-xs text-red-600 font-medium">Delete &ldquo;{entry.store}&rdquo;?</p>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleDelete(entry.id)}
+                                  disabled={deletingId === entry.id}
+                                  className="text-xs bg-red-500 text-white rounded-lg px-3 py-1.5 hover:bg-red-600 transition-colors disabled:opacity-60"
+                                >
+                                  {deletingId === entry.id ? "Deleting…" : "Delete"}
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="text-xs text-gray-500 hover:text-gray-700"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        </AnimatePresence>
       )}
     </div>
   );
