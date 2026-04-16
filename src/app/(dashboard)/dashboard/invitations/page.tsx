@@ -37,7 +37,6 @@ export default async function InvitationsPage() {
   return (
     <DashboardShell
       heading="Invitations"
-      subheading={`${notInvited} not yet invited · ${notResponded} awaiting response`}
     >
       <InvitationsClient groups={wedding.guestGroups} />
     </DashboardShell>

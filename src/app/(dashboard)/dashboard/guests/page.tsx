@@ -36,7 +36,6 @@ export default async function GuestsPage() {
   return (
     <DashboardShell
       heading="Guest List"
-      subheading={`${totalGuests} guest${totalGuests !== 1 ? "s" : ""} in ${wedding.guestGroups.length} group${wedding.guestGroups.length !== 1 ? "s" : ""}`}
       action={<AddGuestDialog weddingId={wedding.id} events={wedding.events} />}
     >
       {wedding.guestGroups.length === 0 ? (
