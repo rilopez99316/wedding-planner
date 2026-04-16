@@ -11,6 +11,21 @@ interface GuestSearchProps {
   onSelect: (group: GroupPublicData) => void;
 }
 
+function GroupAvatar({ name }: { name: string }) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  return (
+    <div className="w-9 h-9 rounded-full bg-champagne flex items-center justify-center shrink-0">
+      <span className="font-serif text-sm font-light text-navy/65">{initials}</span>
+    </div>
+  );
+}
+
 export default function GuestSearch({ weddingId, onSelect }: GuestSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GroupPublicData[]>([]);
@@ -55,7 +70,6 @@ export default function GuestSearch({ weddingId, onSelect }: GuestSearchProps) {
     };
   }, [query, weddingId]);
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -87,40 +101,43 @@ export default function GuestSearch({ weddingId, onSelect }: GuestSearchProps) {
       <AnimatePresence>
         {open && (
           <motion.ul
-            initial={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-20 left-0 right-0 mt-1 bg-white border border-navy/10 shadow-lg shadow-navy/5 overflow-hidden"
+            className="absolute z-20 left-0 right-0 mt-2 bg-white border border-gold/15 rounded-xl shadow-apple-lg overflow-hidden"
           >
             {loading ? (
-              <li className="px-5 py-5 text-center">
-                <p className="text-sm font-serif text-navy/40">Searching…</p>
+              <li className="px-5 py-6 text-center">
+                <p className="text-sm font-serif text-navy/35">Searching…</p>
               </li>
             ) : results.length > 0 ? (
               results.map((group) => (
-                <li key={group.id}>
+                <li key={group.id} className="border-b border-navy/5 last:border-0">
                   <button
                     type="button"
                     onClick={() => handleSelect(group)}
-                    className="w-full text-left px-5 py-4 hover:bg-champagne/40 transition-colors duration-150 border-b border-navy/5 last:border-0"
+                    className="w-full text-left px-5 py-4 hover:bg-champagne/35 transition-colors duration-150 flex items-center gap-4"
                   >
-                    <p className="font-serif text-base font-light text-navy">
-                      {group.groupName}
-                    </p>
-                    <p className="text-xs text-navy/40 font-sans mt-0.5">
-                      {group.guests.map((g) => g.firstName).join(", ")}
-                      {group.hasPlusOne && " + Guest"}
-                    </p>
+                    <GroupAvatar name={group.groupName} />
+                    <div>
+                      <p className="font-serif text-base font-light text-navy">
+                        {group.groupName}
+                      </p>
+                      <p className="text-xs text-navy/40 font-sans mt-0.5">
+                        {group.guests.map((g) => g.firstName).join(", ")}
+                        {group.hasPlusOne && " + Guest"}
+                      </p>
+                    </div>
                   </button>
                 </li>
               ))
             ) : (
-              <li className="px-5 py-5 text-center">
-                <p className="text-sm font-serif text-navy/70">
+              <li className="px-5 py-7 text-center">
+                <p className="text-sm font-serif text-navy/65">
                   Name not found in our guest list
                 </p>
-                <p className="text-xs text-navy/40 font-sans mt-1">
+                <p className="text-xs text-navy/35 font-sans mt-1.5 leading-relaxed">
                   Please double-check your spelling or contact us directly.
                 </p>
               </li>

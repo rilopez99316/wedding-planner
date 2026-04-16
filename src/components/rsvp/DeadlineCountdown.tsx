@@ -14,6 +14,7 @@ interface TimeLeft {
 interface DeadlineCountdownProps {
   rsvpDeadline: Date | string;
   rsvpHref?: string;
+  dark?: boolean;
 }
 
 function getTimeLeft(deadline: Date): TimeLeft | null {
@@ -31,7 +32,7 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export default function DeadlineCountdown({ rsvpDeadline, rsvpHref }: DeadlineCountdownProps) {
+export default function DeadlineCountdown({ rsvpDeadline, rsvpHref, dark = false }: DeadlineCountdownProps) {
   const deadline = new Date(rsvpDeadline);
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeLeft(deadline));
 
@@ -42,63 +43,80 @@ export default function DeadlineCountdown({ rsvpDeadline, rsvpHref }: DeadlineCo
 
   const isUrgent = timeLeft !== null && timeLeft.days < 7;
 
+  const numColor   = dark ? "text-white" : "text-navy";
+  const labelColor = dark ? "text-white/35" : "text-navy/35";
+  const divColor   = dark ? "bg-white/10"  : "bg-gold/20";
+
   if (timeLeft === null) {
     return (
-      <div className="glass-card px-8 py-6 text-center">
-        <p className="font-serif text-2xl text-navy font-light">RSVP is now closed</p>
-        <p className="text-sm text-navy/50 mt-1 font-sans">
-          Thank you to everyone who responded.
-        </p>
+      <div className="text-center space-y-2">
+        <p className={`font-serif text-2xl font-light ${numColor}`}>RSVP is now closed</p>
+        <p className={`text-sm font-sans ${labelColor}`}>Thank you to everyone who responded.</p>
       </div>
     );
   }
 
+  const units = [
+    { value: timeLeft.days,    label: "Days" },
+    { value: timeLeft.hours,   label: "Hours" },
+    { value: timeLeft.minutes, label: "Min" },
+    { value: timeLeft.seconds, label: "Sec" },
+  ];
+
   return (
-    <div className={`glass-card px-8 py-6 ${isUrgent ? "border-red-300/40" : ""}`}>
-      <p className="text-xs tracking-widest uppercase text-center font-sans mb-4 text-navy/50">
-        RSVP Deadline
+    <div className="text-center space-y-8">
+      <p className="text-[10px] tracking-[0.42em] uppercase font-sans text-gold">
+        {isUrgent ? "Deadline approaching" : "RSVP Deadline"}
       </p>
-      <div className="flex items-start justify-center gap-6 md:gap-10">
-        {[
-          { value: timeLeft.days,    label: "Days" },
-          { value: timeLeft.hours,   label: "Hours" },
-          { value: timeLeft.minutes, label: "Min" },
-          { value: timeLeft.seconds, label: "Sec" },
-        ].map(({ value, label }) => (
-          <div key={label} className="flex flex-col items-center">
-            <motion.span
-              key={value}
-              initial={{ opacity: 0.4, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`font-serif text-4xl md:text-5xl font-light tabular-nums leading-none ${
-                isUrgent ? "text-red-500" : "text-navy"
-              }`}
-            >
-              {pad(value)}
-            </motion.span>
-            <span className="text-xs tracking-widest uppercase text-navy/40 mt-1 font-sans">
-              {label}
-            </span>
+
+      <div className="flex items-center justify-center">
+        {units.map(({ value, label }, i) => (
+          <div key={label} className="flex items-center">
+            <div className="flex flex-col items-center px-5 md:px-9">
+              <motion.span
+                key={value}
+                initial={{ opacity: 0.3, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className={`font-serif font-light tabular-nums leading-none ${
+                  isUrgent ? "text-gold" : numColor
+                }`}
+                style={{ fontSize: "clamp(2.75rem, 6vw, 4.75rem)" }}
+              >
+                {pad(value)}
+              </motion.span>
+              <span className={`text-[10px] tracking-[0.32em] uppercase mt-2.5 font-sans ${labelColor}`}>
+                {label}
+              </span>
+            </div>
+            {i < units.length - 1 && (
+              <div className={`w-px h-10 self-center ${divColor}`} />
+            )}
           </div>
         ))}
       </div>
+
       {isUrgent && (
         <motion.p
-          animate={{ opacity: [1, 0.5, 1] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-center text-xs text-red-500 mt-4 tracking-wider font-sans"
+          animate={{ opacity: [1, 0.45, 1] }}
+          transition={{ repeat: Infinity, duration: 1.8 }}
+          className="text-[10px] tracking-[0.32em] uppercase text-gold font-sans"
         >
-          ◆ Deadline approaching — please respond soon
+          ◆ Please respond soon
         </motion.p>
       )}
+
       {rsvpHref && (
-        <div className="text-center mt-5">
+        <div>
           <Link
             href={rsvpHref}
-            className="text-xs tracking-widest uppercase text-navy/60 border-b border-navy/20 hover:text-navy hover:border-navy/50 transition-colors pb-0.5 font-sans"
+            className={`inline-flex items-center gap-3 px-10 py-4 text-[10px] tracking-[0.3em] uppercase font-sans border transition-all duration-300 ${
+              dark
+                ? "border-white/30 text-white hover:bg-white hover:text-navy"
+                : "border-navy/25 text-navy hover:bg-navy hover:text-ivory"
+            }`}
           >
-            RSVP now
+            Kindly RSVP
           </Link>
         </div>
       )}
