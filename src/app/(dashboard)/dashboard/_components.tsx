@@ -33,62 +33,96 @@ export function HeroBanner({
   weddingDate,
   venueName,
   daysUntilWedding,
+  coverPhotoUrl,
 }: {
   partner1Name: string;
   partner2Name: string;
   weddingDate: Date | string;
   venueName: string | null;
   daysUntilWedding: number;
+  coverPhotoUrl?: string | null;
 }) {
   const isToday = daysUntilWedding <= 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent-light via-white to-white border border-accent/10 shadow-apple-sm px-8 py-12">
-      {/* Decorative heart — top-right watermark */}
-      <svg
-        className="absolute right-6 top-6 w-28 h-28 text-accent/[0.07] pointer-events-none select-none"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.518 3.318 1 6.628 1c1.684 0 3.291.956 4.372 2.417C12.072 1.956 13.679 1 15.372 1 18.682 1 21 3.518 21 7.191c0 4.105-5.37 8.863-11 14.402z" />
-      </svg>
+    <div className="relative overflow-hidden rounded-2xl shadow-apple-lg" style={{ minHeight: "300px" }}>
+      {/* Background — photo or romantic gradient fallback */}
+      {coverPhotoUrl ? (
+        <img
+          src={coverPhotoUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, #1B2A4A 0%, #2a1f3d 50%, #0f1a2e 100%)" }}
+        >
+          {/* Subtle crosshatch texture — matches public wedding page fallback */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg,#fff 0,transparent 1px,transparent 8px),repeating-linear-gradient(-45deg,#fff 0,transparent 1px,transparent 8px)",
+            }}
+          />
+        </div>
+      )}
 
-      {/* Decorative rings — bottom-left watermark */}
-      <svg
-        className="absolute -left-8 -bottom-8 w-44 h-44 text-accent/[0.05] pointer-events-none select-none"
-        viewBox="0 0 100 100"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <circle cx="50" cy="50" r="40" />
-        <circle cx="50" cy="50" r="24" />
-      </svg>
+      {/* Directional vignette — lets the photo breathe in the center */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/30 to-black/65" />
 
-      <div className="relative flex flex-col items-center text-center gap-3">
-        {/* Couple names — the emotional anchor */}
-        <h1 className="font-serif text-display-sm text-gray-900">
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-8 py-16">
+        {/* Pre-label */}
+        <p className="text-[9px] tracking-[0.45em] uppercase text-white/70 font-sans mb-5 select-none">
+          your wedding day
+        </p>
+
+        {/* Couple names — cinematic serif, matches public page aesthetic */}
+        <h1
+          className="font-serif font-light text-white leading-tight"
+          style={{
+            fontSize: "clamp(2rem, 5vw, 3.5rem)",
+            letterSpacing: "-0.01em",
+            textShadow: "0 2px 24px rgba(0,0,0,0.35)",
+          }}
+        >
           {partner1Name} & {partner2Name}
         </h1>
 
+        {/* Diamond separator — mirrors public wedding page */}
+        <div className="flex items-center gap-3 my-5">
+          <div className="w-12 h-px bg-white/25" />
+          <span className="text-white/35 text-[8px] select-none">◆</span>
+          <div className="w-12 h-px bg-white/25" />
+        </div>
+
         {/* Date + venue */}
-        <p className="text-sm text-gray-500 font-medium tracking-wide">
+        <p className="text-[10px] tracking-[0.3em] uppercase text-white/85 font-sans mb-8">
           {formatDate(weddingDate)}
-          {venueName ? <> &middot; {venueName}</> : null}
+          {venueName ? <>&nbsp;&middot;&nbsp;{venueName}</> : null}
         </p>
 
-        {/* Countdown */}
+        {/* Countdown — frosted glass card */}
         {isToday ? (
-          <div className="mt-3 px-10 py-5 rounded-2xl bg-accent text-white shadow-apple-md">
-            <div className="text-5xl font-semibold leading-none">Today! 🎉</div>
-            <div className="text-sm font-medium text-white/80 mt-1.5">Your wedding day is here</div>
+          <div className="backdrop-blur-md bg-white/15 border border-white/20 rounded-2xl px-10 py-5 shadow-apple-md">
+            <div className="text-4xl font-light font-serif text-white leading-none">Today!</div>
+            <div className="text-[9px] tracking-[0.3em] uppercase text-white/50 mt-2.5 font-sans">
+              Your wedding day is here
+            </div>
           </div>
         ) : (
-          <div className="mt-3 px-12 py-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-accent/15 shadow-apple-md">
-            <div className="text-7xl font-semibold tabular-nums text-accent leading-none">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-12 py-6 shadow-apple-md">
+            <div
+              className="text-7xl font-semibold tabular-nums text-white leading-none"
+              style={{ textShadow: "0 2px 16px rgba(0,0,0,0.25)" }}
+            >
               {daysUntilWedding}
             </div>
-            <div className="text-sm font-medium text-gray-500 mt-2">days to go</div>
+            <div className="text-[9px] tracking-[0.35em] uppercase text-white/50 mt-2.5 font-sans">
+              days to go
+            </div>
           </div>
         )}
       </div>
