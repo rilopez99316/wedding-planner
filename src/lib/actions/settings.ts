@@ -21,6 +21,7 @@ const weddingDetailsSchema = z.object({
   venueName:     z.string().optional(),
   venueAddress:  z.string().optional(),
   accentColor:   z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  colorPalette:  z.string().optional(),
   coverPhotoUrl: z.string().url().optional().or(z.literal("")),
 });
 
@@ -44,6 +45,7 @@ export async function updateWeddingDetailsAction(formData: unknown) {
       venueName:     data.venueName || null,
       venueAddress:  data.venueAddress || null,
       accentColor:   data.accentColor ?? wedding.accentColor,
+      colorPalette:  data.colorPalette ?? wedding.colorPalette,
       coverPhotoUrl: data.coverPhotoUrl || null,
     },
   });

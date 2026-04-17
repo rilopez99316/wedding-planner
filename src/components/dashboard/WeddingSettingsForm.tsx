@@ -5,6 +5,8 @@ import { updateWeddingDetailsAction } from "@/lib/actions/settings";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
+import WeddingPalettePicker from "@/components/dashboard/WeddingPalettePicker";
+import { type PaletteKey } from "@/lib/weddingPalettes";
 
 interface WeddingSettingsFormProps {
   wedding: {
@@ -15,6 +17,7 @@ interface WeddingSettingsFormProps {
     venueName: string;
     venueAddress: string;
     accentColor: string;
+    colorPalette: string;
     coverPhotoUrl: string;
     slug: string;
   };
@@ -204,26 +207,18 @@ export default function WeddingSettingsForm({ wedding }: WeddingSettingsFormProp
         )}
       </section>
 
-      {/* Accent color */}
+      {/* Website Palette */}
       <section className="bg-white rounded-[16px] shadow-apple-sm p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">Accent Color</h2>
-        <p className="text-xs text-gray-500">
-          This color is used on your public wedding website.
-        </p>
-        <div className="flex items-center gap-4">
-          <input
-            type="color"
-            value={form.accentColor}
-            onChange={(e) => set("accentColor", e.target.value)}
-            className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-          />
-          <Input
-            label="Hex value"
-            value={form.accentColor}
-            onChange={(e) => set("accentColor", e.target.value)}
-            className="flex-1"
-          />
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">Website Palette</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Choose a color story for your wedding website. Every page — hero, cards, footer — adapts instantly.
+          </p>
         </div>
+        <WeddingPalettePicker
+          value={form.colorPalette}
+          onChange={(key: PaletteKey) => set("colorPalette", key)}
+        />
       </section>
 
       {/* Website link */}

@@ -38,6 +38,34 @@ interface RSVPPageClientProps {
 
 type View = "search" | "form" | "thanks";
 
+function BotanicalOrnament({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 140 56"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <line x1="70" y1="54" x2="70" y2="4" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
+      <path d="M70 42 Q52 33 46 20" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M70 30 Q55 21 51 10" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M70 18 Q61 12 59 4" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <ellipse cx="44" cy="18" rx="6" ry="2.5" transform="rotate(-35 44 18)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="49" cy="8" rx="5" ry="2" transform="rotate(-50 49 8)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="57" cy="2" rx="3.5" ry="1.5" transform="rotate(-65 57 2)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <path d="M70 42 Q88 33 94 20" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M70 30 Q85 21 89 10" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M70 18 Q79 12 81 4" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <ellipse cx="96" cy="18" rx="6" ry="2.5" transform="rotate(35 96 18)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="91" cy="8" rx="5" ry="2" transform="rotate(50 91 8)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="83" cy="2" rx="3.5" ry="1.5" transform="rotate(65 83 2)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <path d="M70 54 Q59 47 55 43" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round" fill="none" />
+      <path d="M70 54 Q81 47 85 43" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
 export default function RSVPPageClient({ wedding, initialGroup }: RSVPPageClientProps) {
   const [view, setView] = useState<View>(initialGroup ? "form" : "search");
   const [group, setGroup] = useState<GroupPublicData | null>(initialGroup);
@@ -46,10 +74,11 @@ export default function RSVPPageClient({ wedding, initialGroup }: RSVPPageClient
   if (isPastDeadline) {
     return (
       <FadeIn direction="up">
-        <div className="glass-card px-8 py-10 text-center space-y-2">
+        <div className="text-center py-12 space-y-4">
+          <BotanicalOrnament className="w-20 text-gold/25 mx-auto" />
           <p className="font-serif text-2xl font-light text-navy">RSVP is now closed</p>
-          <p className="text-sm text-navy/50 font-sans">
-            Thank you to everyone who responded.
+          <p className="text-sm text-navy/50 font-sans max-w-xs mx-auto leading-relaxed">
+            Thank you to everyone who responded. We can&apos;t wait to celebrate.
           </p>
         </div>
       </FadeIn>
@@ -58,19 +87,26 @@ export default function RSVPPageClient({ wedding, initialGroup }: RSVPPageClient
 
   return (
     <AnimatePresence mode="wait">
+
+      {/* ── Search ── */}
       {view === "search" && (
         <motion.div
           key="search"
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
+          exit={{ opacity: 0, y: -18 }}
           transition={{ type: "spring", stiffness: 180, damping: 28 }}
-          className="space-y-8"
+          className="space-y-10"
         >
-          <div className="text-center space-y-2">
-            <h2 className="font-serif text-2xl font-light text-navy">Find your invitation</h2>
-            <p className="text-sm text-navy/50 font-sans">
-              Search for your name to get started.
+          <div className="text-center space-y-3">
+            <p className="text-[10px] tracking-[0.38em] uppercase text-gold font-sans">
+              You&apos;re invited
+            </p>
+            <h2 className="font-serif text-3xl md:text-4xl font-light text-navy">
+              Find your invitation
+            </h2>
+            <p className="text-sm text-navy/50 font-sans max-w-xs mx-auto leading-relaxed">
+              Search for your name below to begin your RSVP.
             </p>
           </div>
 
@@ -86,25 +122,28 @@ export default function RSVPPageClient({ wedding, initialGroup }: RSVPPageClient
 
           <Divider />
 
-          <p className="text-center text-xs text-navy/30 font-sans">
+          <p className="text-center text-xs text-navy/30 font-sans leading-relaxed">
             Received an email invitation?{" "}
-            <span className="text-navy/50">Use the link in your email for a faster experience.</span>
+            <span className="text-navy/50">
+              Use the personal link in your email for a faster experience.
+            </span>
           </p>
         </motion.div>
       )}
 
+      {/* ── Form ── */}
       {view === "form" && group && (
         <motion.div
           key="form"
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -16 }}
+          exit={{ opacity: 0, y: -18 }}
           transition={{ type: "spring", stiffness: 180, damping: 28 }}
         >
           {group.hasExistingResponse && (
-            <div className="mb-6 px-5 py-3 border border-gold/30 bg-champagne/20 text-center">
-              <p className="text-xs font-sans text-navy/60">
-                You&apos;ve already responded — you can update your RSVP below.
+            <div className="mb-8 px-5 py-4 border-l-2 border-gold bg-champagne/20 rounded-r-xl">
+              <p className="text-xs font-sans text-navy/60 leading-relaxed">
+                You&apos;ve already responded — you&apos;re welcome to update your RSVP below.
               </p>
             </div>
           )}
@@ -122,42 +161,43 @@ export default function RSVPPageClient({ wedding, initialGroup }: RSVPPageClient
         </motion.div>
       )}
 
+      {/* ── Thanks ── */}
       {view === "thanks" && group && (
         <motion.div
           key="thanks"
-          initial={{ opacity: 0, scale: 0.97 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 180, damping: 28 }}
-          className="text-center space-y-6 py-8"
+          className="text-center py-10 space-y-8"
         >
-          <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center">
-            <svg width="24" height="20" viewBox="0 0 24 20" fill="none">
-              <path
-                d="M2 10L9 17L22 3"
-                stroke="#C9A84C"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 22, delay: 0.1 }}
+          >
+            <BotanicalOrnament className="w-28 text-gold/45 mx-auto" />
+          </motion.div>
 
-          <div className="space-y-2">
-            <h2 className="font-serif text-3xl font-light text-navy">
+          <div className="space-y-3">
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold font-sans">
+              See you soon
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl font-light text-navy">
               Thank you, {group.guests[0]?.firstName}!
             </h2>
-            <p className="text-sm text-navy/50 font-sans">
-              Your RSVP has been received. We look forward to celebrating with you.
+            <p className="text-sm text-navy/50 font-sans max-w-xs mx-auto leading-relaxed">
+              Your RSVP has been received. We are overjoyed that you&apos;ll be celebrating with us.
             </p>
           </div>
 
           <Divider diamond />
 
-          <p className="text-xs tracking-widest uppercase text-navy/30 font-sans">
+          <p className="text-xs tracking-[0.35em] uppercase text-navy/30 font-sans">
             {wedding.partner1Name} &amp; {wedding.partner2Name}
           </p>
         </motion.div>
       )}
+
     </AnimatePresence>
   );
 }

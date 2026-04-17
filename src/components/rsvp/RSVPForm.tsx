@@ -25,6 +25,62 @@ const slideVariants = {
   exit: { opacity: 0, x: -40 },
 };
 
+const STEP_LABELS = ["Confirm", "Events", "Dietary", "Review"];
+
+function StepIndicator({ step }: { step: Step }) {
+  return (
+    <div className="flex items-center justify-center gap-0 mb-10">
+      {STEP_LABELS.map((label, i) => {
+        const s = (i + 1) as Step;
+        const done   = step > s;
+        const active = step === s;
+        return (
+          <div key={label} className="flex items-center">
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={[
+                  "w-2.5 h-2.5 rounded-full border-2 transition-all duration-300",
+                  done   ? "bg-gold border-gold scale-100"       : "",
+                  active ? "bg-navy border-navy scale-125"        : "",
+                  !done && !active ? "bg-transparent border-navy/20" : "",
+                ].join(" ")}
+              />
+              <span
+                className={`text-[10px] tracking-[0.22em] uppercase font-sans transition-colors duration-200 ${
+                  active ? "text-navy" : done ? "text-gold" : "text-navy/25"
+                }`}
+              >
+                {label}
+              </span>
+            </div>
+            {i < STEP_LABELS.length - 1 && (
+              <div
+                className={`w-12 md:w-20 h-px mx-1 mb-5 transition-colors duration-300 ${
+                  done ? "bg-gold/50" : "bg-navy/10"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function GuestRow({ firstName, lastName }: { firstName: string; lastName: string }) {
+  const initials = [firstName[0], lastName[0]].filter(Boolean).join("").toUpperCase();
+  return (
+    <div className="flex items-center gap-4 px-5 py-4 rounded-xl border border-gold/15 bg-ivory">
+      <div className="w-9 h-9 rounded-full bg-champagne flex items-center justify-center shrink-0">
+        <span className="font-serif text-sm font-light text-navy/70">{initials}</span>
+      </div>
+      <span className="font-serif text-base font-light text-navy">
+        {firstName} {lastName}
+      </span>
+    </div>
+  );
+}
+
 export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFormProps) {
   const [step, setStep] = useState<Step>(1);
   const [plusOneAttending, setPlusOneAttending] = useState(false);
@@ -74,51 +130,12 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
     }
   }
 
-  const stepLabel = ["Confirm", "Events", "Dietary", "Review"];
-
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-8">
-        {stepLabel.map((label, i) => {
-          const s = (i + 1) as Step;
-          const done = step > s;
-          const active = step === s;
-          return (
-            <div key={label} className="flex items-center gap-2">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-sans transition-colors duration-200 ${
-                    done
-                      ? "bg-gold text-ivory"
-                      : active
-                      ? "bg-navy text-ivory"
-                      : "bg-navy/10 text-navy/30"
-                  }`}
-                >
-                  {done ? "✓" : s}
-                </div>
-                <span
-                  className={`text-xs mt-1 tracking-wider font-sans ${
-                    active ? "text-navy" : "text-navy/30"
-                  }`}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < stepLabel.length - 1 && (
-                <div
-                  className={`h-px w-8 mb-4 transition-colors duration-300 ${
-                    done ? "bg-gold" : "bg-navy/10"
-                  }`}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <StepIndicator step={step} />
 
       <AnimatePresence mode="wait">
+
         {/* ── Step 1: Confirm guests ── */}
         {step === 1 && (
           <motion.div
@@ -128,31 +145,27 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
             animate="center"
             exit="exit"
             transition={{ type: "spring", stiffness: 200, damping: 30 }}
-            className="space-y-6"
+            className="space-y-7"
           >
             <div>
-              <h2 className="font-serif text-2xl font-light text-navy">Is this your party?</h2>
-              <p className="text-sm text-navy/50 mt-1 font-sans">
+              <h2 className="font-serif text-2xl md:text-3xl font-light text-navy">
+                Is this your party?
+              </h2>
+              <p className="text-sm text-navy/45 mt-1.5 font-sans leading-relaxed">
                 Please confirm the guests in your group.
               </p>
             </div>
+
             <Divider />
-            <div className="space-y-2">
+
+            <div className="space-y-2.5">
               {group.guests.map((g) => (
-                <div
-                  key={g.id}
-                  className="flex items-center gap-3 px-4 py-3 border border-navy/10 bg-white/50"
-                >
-                  <span className="w-2 h-2 rounded-full bg-gold flex-shrink-0" />
-                  <span className="font-serif text-base font-light text-navy">
-                    {g.firstName} {g.lastName}
-                  </span>
-                </div>
+                <GuestRow key={g.id} firstName={g.firstName} lastName={g.lastName} />
               ))}
 
               {group.hasPlusOne && (
-                <div className="space-y-3 mt-4">
-                  <label className="flex items-center gap-3 px-4 py-3 border border-navy/10 bg-white/50 cursor-pointer hover:border-gold/50 transition-colors">
+                <div className="space-y-3 pt-1">
+                  <label className="flex items-center gap-4 px-5 py-4 rounded-xl border border-navy/10 bg-ivory cursor-pointer hover:border-gold/40 transition-colors duration-200">
                     <input
                       type="checkbox"
                       checked={plusOneAttending}
@@ -160,17 +173,17 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                       className="sr-only"
                     />
                     <span
-                      className={`w-4 h-4 border flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors duration-200 ${
                         plusOneAttending ? "border-gold bg-gold" : "border-navy/20"
                       }`}
                     >
                       {plusOneAttending && (
                         <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4L3.5 6.5L9 1" stroke="#FDFAF5" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M1 4L3.5 6.5L9 1" stroke="#FDFAF5" strokeWidth="1.75" strokeLinecap="round" />
                         </svg>
                       )}
                     </span>
-                    <span className="font-serif text-base font-light text-navy/70">
+                    <span className="font-serif text-base font-light text-navy/65">
                       {group.plusOneNameIfKnown ? group.plusOneNameIfKnown : "+ Guest"}
                     </span>
                   </label>
@@ -192,7 +205,8 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                 </div>
               )}
             </div>
-            <div className="flex gap-3 pt-2">
+
+            <div className="flex gap-3 pt-1">
               <Button variant="ghost" onClick={onBack} className="flex-1">
                 Back
               </Button>
@@ -212,15 +226,19 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
             animate="center"
             exit="exit"
             transition={{ type: "spring", stiffness: 200, damping: 30 }}
-            className="space-y-6"
+            className="space-y-7"
           >
             <div>
-              <h2 className="font-serif text-2xl font-light text-navy">Which events?</h2>
-              <p className="text-sm text-navy/50 mt-1 font-sans">
+              <h2 className="font-serif text-2xl md:text-3xl font-light text-navy">
+                Which events?
+              </h2>
+              <p className="text-sm text-navy/45 mt-1.5 font-sans leading-relaxed">
                 Let us know which celebrations you&apos;ll be attending.
               </p>
             </div>
+
             <Divider />
+
             <div className="space-y-3">
               {group.allowedEventKeys.map((key) => {
                 const event = wedding.events.find((e) => e.key === key);
@@ -228,14 +246,16 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                 return (
                   <label
                     key={key}
-                    className={`flex items-center justify-between px-5 py-4 border cursor-pointer transition-all duration-150 ${
+                    className={[
+                      "flex items-center justify-between px-5 py-5 rounded-xl border cursor-pointer",
+                      "transition-all duration-200",
                       attending
-                        ? "border-gold bg-champagne/20"
-                        : "border-navy/10 bg-white/50 hover:border-gold/40"
-                    }`}
+                        ? "border-gold/40 bg-champagne/25 shadow-apple-xs"
+                        : "border-navy/10 bg-ivory hover:border-gold/30",
+                    ].join(" ")}
                   >
                     <div>
-                      <p className="font-serif text-base font-light text-navy">
+                      <p className="font-serif text-lg font-light text-navy">
                         {event?.label ?? key}
                       </p>
                       {event && (
@@ -255,13 +275,13 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                       className="sr-only"
                     />
                     <span
-                      className={`w-5 h-5 border flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors duration-200 ml-4 ${
                         attending ? "border-gold bg-gold" : "border-navy/20"
                       }`}
                     >
                       {attending && (
-                        <svg width="12" height="9" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4L3.5 6.5L9 1" stroke="#FDFAF5" strokeWidth="1.5" strokeLinecap="round" />
+                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                          <path d="M1 4L3.5 6.5L9 1" stroke="#FDFAF5" strokeWidth="1.75" strokeLinecap="round" />
                         </svg>
                       )}
                     </span>
@@ -270,12 +290,13 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
               })}
 
               {group.allowedEventKeys.length === 0 && (
-                <p className="text-sm text-navy/40 font-sans text-center py-4">
-                  No specific events assigned — you&apos;re invited to all celebrations.
+                <p className="text-sm text-navy/40 font-sans text-center py-6">
+                  You&apos;re invited to all celebrations.
                 </p>
               )}
             </div>
-            <div className="flex gap-3 pt-2">
+
+            <div className="flex gap-3 pt-1">
               <Button variant="ghost" onClick={() => setStep(1)} className="flex-1">
                 Back
               </Button>
@@ -298,12 +319,16 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
             className="space-y-8"
           >
             <div>
-              <h2 className="font-serif text-2xl font-light text-navy">Dietary needs</h2>
-              <p className="text-sm text-navy/50 mt-1 font-sans">
+              <h2 className="font-serif text-2xl md:text-3xl font-light text-navy">
+                Dietary needs
+              </h2>
+              <p className="text-sm text-navy/45 mt-1.5 font-sans leading-relaxed">
                 Help us make sure everyone is taken care of.
               </p>
             </div>
+
             <Divider />
+
             {group.guests.map((guest, i) => (
               <div key={guest.id} className="space-y-4">
                 {i > 0 && <Divider diamond />}
@@ -315,6 +340,7 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                 />
               </div>
             ))}
+
             {group.hasPlusOne && plusOneAttending && (
               <div className="space-y-4">
                 <Divider diamond />
@@ -326,7 +352,8 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                 />
               </div>
             )}
-            <div className="flex gap-3 pt-2">
+
+            <div className="flex gap-3 pt-1">
               <Button variant="ghost" onClick={() => setStep(2)} className="flex-1">
                 Back
               </Button>
@@ -346,54 +373,63 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
             animate="center"
             exit="exit"
             transition={{ type: "spring", stiffness: 200, damping: 30 }}
-            className="space-y-6"
+            className="space-y-7"
           >
             <div>
-              <h2 className="font-serif text-2xl font-light text-navy">Review & submit</h2>
-              <p className="text-sm text-navy/50 mt-1 font-sans">
+              <h2 className="font-serif text-2xl md:text-3xl font-light text-navy">
+                Review &amp; submit
+              </h2>
+              <p className="text-sm text-navy/45 mt-1.5 font-sans leading-relaxed">
                 Please confirm your details before submitting.
               </p>
             </div>
+
             <Divider />
 
-            {/* Guests */}
-            <div className="space-y-1">
-              <p className="text-xs tracking-widest uppercase text-navy/40 font-sans">Guests</p>
-              {group.guests.map((g) => (
-                <p key={g.id} className="font-serif text-base font-light text-navy">
-                  {g.firstName} {g.lastName}
-                </p>
-              ))}
-              {group.hasPlusOne && plusOneAttending && (
-                <p className="font-serif text-base font-light text-navy">
-                  {plusOneName || group.plusOneNameIfKnown || "Guest"}
-                </p>
-              )}
-            </div>
+            {/* Summary card */}
+            <div className="rounded-2xl border border-gold/15 bg-champagne/15 overflow-hidden divide-y divide-gold/10">
+              {/* Guests */}
+              <div className="px-6 py-5 space-y-2">
+                <p className="text-[10px] tracking-[0.28em] uppercase text-gold font-sans">Guests</p>
+                {group.guests.map((g) => (
+                  <p key={g.id} className="font-serif text-base font-light text-navy">
+                    {g.firstName} {g.lastName}
+                  </p>
+                ))}
+                {group.hasPlusOne && plusOneAttending && (
+                  <p className="font-serif text-base font-light text-navy">
+                    {plusOneName || group.plusOneNameIfKnown || "Guest"}
+                  </p>
+                )}
+              </div>
 
-            {/* Events */}
-            <div className="space-y-1">
-              <p className="text-xs tracking-widest uppercase text-navy/40 font-sans">Attending</p>
-              {group.allowedEventKeys
-                .filter((k) => eventAttendance[k])
-                .map((k) => {
-                  const event = wedding.events.find((e) => e.key === k);
-                  return (
-                    <p key={k} className="text-sm font-sans text-navy">
-                      {event?.label ?? k}
-                    </p>
-                  );
-                })}
-              {group.allowedEventKeys.every((k) => !eventAttendance[k]) && (
-                <p className="text-sm font-sans text-navy/50 italic">Not attending any events</p>
-              )}
+              {/* Events */}
+              <div className="px-6 py-5 space-y-2">
+                <p className="text-[10px] tracking-[0.28em] uppercase text-gold font-sans">Attending</p>
+                {group.allowedEventKeys.filter((k) => eventAttendance[k]).length > 0 ? (
+                  group.allowedEventKeys
+                    .filter((k) => eventAttendance[k])
+                    .map((k) => {
+                      const event = wedding.events.find((e) => e.key === k);
+                      return (
+                        <p key={k} className="text-sm font-sans text-navy/80">
+                          {event?.label ?? k}
+                        </p>
+                      );
+                    })
+                ) : (
+                  <p className="text-sm font-sans text-navy/40 italic">
+                    Not attending any events
+                  </p>
+                )}
+              </div>
             </div>
 
             {error && (
               <p className="text-sm text-red-500 font-sans text-center">{error}</p>
             )}
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-1">
               <Button variant="ghost" onClick={() => setStep(3)} className="flex-1">
                 Back
               </Button>
@@ -403,6 +439,7 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
             </div>
           </motion.div>
         )}
+
       </AnimatePresence>
     </div>
   );

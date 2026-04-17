@@ -80,6 +80,7 @@ model Wedding {
   venueAddress  String?
 
   accentColor   String   @default("#0071E3")
+  colorPalette  String   @default("classic-ivory")
   coverPhotoUrl String?
   totalBudget   Float?
 

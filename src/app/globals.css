@@ -9,8 +9,18 @@
     --accent-hover: #0077ED;
     --accent-light: #E8F1FB;
 
-    /* Wedding accent — couples customize this */
-    --wedding-accent: #0071E3;
+    /* Wedding accent — couples customize this (overridden by palette in layout) */
+    --wedding-accent: #C9A84C;
+
+    /* Wedding palette CSS variables — defaults match Classic Ivory.
+       The wedding layout wrapper overrides these per-couple via inline style,
+       so all Tailwind classes (bg-ivory, text-navy, bg-gold…) adapt automatically. */
+    --w-ivory:      253 250 245;
+    --w-navy:       27 42 74;
+    --w-gold:       201 168 76;
+    --w-champagne:  245 230 200;
+    --w-hero-start: 27 42 74;
+    --w-hero-mid:   10 18 38;
   }
 
   html {
@@ -52,13 +62,68 @@
     @apply font-serif;
   }
 
-  /* Glass morphism (wedding pages) */
+  /* Glass morphism (wedding pages) — adapts to the active palette */
   .glass-card {
-    background: rgba(253, 250, 245, 0.75);
+    background: rgba(var(--w-ivory), 0.75);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(201, 168, 76, 0.2);
+    border: 1px solid rgba(var(--w-gold), 0.2);
     border-radius: 16px;
+  }
+
+  /* Dark palette override */
+  .wedding-page[data-dark="true"] .glass-card {
+    background: rgba(255 255 255, 0.06);
+    border-color: rgba(var(--w-gold), 0.25);
+  }
+
+  /* ── Dark palette: text contrast fixes ──────────────────────────────────
+     On dark palettes, --w-navy is a light color (e.g. #E6E1D7). Low-opacity
+     navy text becomes dark gray on dark backgrounds — unreadable. Boost opacity
+     so secondary text hierarchy is legible while the visual weight stays muted. */
+  .wedding-page[data-dark="true"] [class~="text-navy/25"],
+  .wedding-page[data-dark="true"] [class~="text-navy/30"] {
+    color: rgb(var(--w-navy) / 0.60) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="text-navy/35"] {
+    color: rgb(var(--w-navy) / 0.65) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="text-navy/40"],
+  .wedding-page[data-dark="true"] [class~="text-navy/45"] {
+    color: rgb(var(--w-navy) / 0.70) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="text-navy/50"] {
+    color: rgb(var(--w-navy) / 0.75) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="text-navy/60"],
+  .wedding-page[data-dark="true"] [class~="text-navy/65"],
+  .wedding-page[data-dark="true"] [class~="text-navy/70"] {
+    color: rgb(var(--w-navy) / 0.85) !important;
+  }
+
+  /* Gold at low opacity on dark bg */
+  .wedding-page[data-dark="true"] [class~="text-gold/60"] {
+    color: rgb(var(--w-gold) / 0.88) !important;
+  }
+
+  /* ── Dark palette: border/bg fixes ──────────────────────────────────────
+     Thin navy borders and connecting lines are near-invisible on dark bg. */
+  .wedding-page[data-dark="true"] [class~="border-navy/5"] {
+    border-color: rgb(var(--w-navy) / 0.18) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="border-navy/10"] {
+    border-color: rgb(var(--w-navy) / 0.25) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="border-navy/20"] {
+    border-color: rgb(var(--w-navy) / 0.42) !important;
+  }
+  .wedding-page[data-dark="true"] [class~="bg-navy/10"] {
+    background-color: rgb(var(--w-navy) / 0.28) !important;
+  }
+
+  /* Avatar placeholder: bg-champagne is near-black on dark palettes */
+  .wedding-page[data-dark="true"] [class~="bg-champagne"] {
+    background-color: rgb(var(--w-gold) / 0.18) !important;
   }
 
   /* Platform glass */
@@ -84,8 +149,10 @@
     @apply bg-accent-light text-accent font-semibold;
   }
 
-  /* Gold divider (wedding pages) */
+  /* Accent divider (wedding pages) — color adapts with the palette */
   .gold-divider {
-    @apply h-px bg-gold/40;
+    height: 1px;
+    background-color: rgba(var(--w-gold), 0.4);
   }
+
 }

@@ -54,7 +54,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #1B2A4A 0%, #0f1a2e 50%, #2a1f3d 100%)",
+              background: "linear-gradient(135deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 50%, rgb(var(--w-hero-mid)) 100%)",
             }}
           >
             {/* Subtle texture overlay */}
@@ -123,7 +123,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
             <div className="mt-12">
               <Link
                 href={`/${slug}/rsvp`}
-                className="inline-flex items-center gap-3 px-10 py-4 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-white hover:text-navy transition-all duration-300"
+                className="inline-flex items-center gap-3 px-10 py-4 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-[var(--wedding-accent)] hover:border-[var(--wedding-accent)] hover:text-white transition-all duration-300"
               >
                 Kindly RSVP
               </Link>
@@ -139,10 +139,32 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
       </section>
 
       {/* ── Countdown ────────────────────────────────────────────────────── */}
-      <section className="bg-champagne/30 py-16 px-6">
-        <div className="max-w-lg mx-auto">
+      <section
+        className="relative overflow-hidden py-24 px-6"
+        style={{ background: "linear-gradient(180deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 100%)" }}
+      >
+        {/* Texture */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: 0.025,
+            backgroundImage:
+              "repeating-linear-gradient(45deg, #fff 0px, transparent 1px, transparent 8px), repeating-linear-gradient(-45deg, #fff 0px, transparent 1px, transparent 8px)",
+          }}
+        />
+        {/* Ghost text */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden font-serif font-light text-white"
+          style={{ fontSize: "clamp(4rem, 18vw, 13rem)", opacity: 0.03, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}
+        >
+          Soon
+        </span>
+
+        <div className="relative z-10 max-w-2xl mx-auto">
           <FadeIn direction="up">
-            <DeadlineCountdown rsvpDeadline={rsvpDeadline} rsvpHref={`/${slug}/rsvp`} />
+            <DeadlineCountdown rsvpDeadline={rsvpDeadline} rsvpHref={`/${slug}/rsvp`} dark />
           </FadeIn>
         </div>
       </section>
@@ -159,21 +181,45 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
               </div>
             </FadeIn>
 
-            <div className={`grid grid-cols-1 ${events.length === 2 ? "md:grid-cols-2" : events.length >= 3 ? "md:grid-cols-3" : ""} gap-px bg-navy/5`}>
+            <div className={`grid grid-cols-1 gap-6 ${events.length === 2 ? "md:grid-cols-2" : events.length >= 3 ? "md:grid-cols-3" : ""}`}>
               {events.map((event, i) => (
-                <FadeIn key={event.id} direction="up" delay={i * 0.08}>
-                  <article className="bg-ivory px-8 py-10 space-y-4 hover:bg-champagne/20 transition-colors duration-300">
-                    <p className="text-[10px] tracking-[0.4em] uppercase text-gold font-sans">
-                      {formatTime(event.date)}
-                    </p>
-                    <h3 className="font-serif text-2xl font-light text-navy">{event.label}</h3>
-                    <div className="w-8 h-px bg-gold opacity-60" />
-                    {event.location && (
-                      <p className="text-sm text-navy/60 font-sans leading-relaxed">{event.location}</p>
-                    )}
-                    {event.notes && (
-                      <p className="text-sm text-navy/40 font-sans leading-relaxed italic">{event.notes}</p>
-                    )}
+                <FadeIn key={event.id} direction="up" delay={i * 0.09}>
+                  <article className="group relative bg-ivory rounded-2xl overflow-hidden shadow-apple-md ring-1 ring-navy/8 hover:shadow-apple-lg hover:-translate-y-0.5 transition-all duration-300">
+                    {/* Gold left accent bar */}
+                    <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-gold via-gold/60 to-gold/20" />
+
+                    {/* Decorative concentric rings */}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 120 120"
+                      fill="none"
+                      className="absolute -right-6 -bottom-6 w-40 h-40 text-navy pointer-events-none"
+                      style={{ opacity: 0.03 }}
+                    >
+                      <circle cx="80" cy="80" r="65" stroke="currentColor" strokeWidth="0.8" />
+                      <circle cx="80" cy="80" r="48" stroke="currentColor" strokeWidth="0.5" />
+                      <circle cx="80" cy="80" r="32" stroke="currentColor" strokeWidth="0.4" />
+                    </svg>
+
+                    <div className="relative z-10 px-9 py-10 space-y-4">
+                      <p className="text-[10px] tracking-[0.45em] uppercase text-gold font-sans">
+                        {formatTime(event.date)}
+                      </p>
+                      <h3 className="font-serif text-3xl font-light text-navy leading-tight">
+                        {event.label}
+                      </h3>
+                      <div className="w-8 h-px bg-gold/40" />
+                      {event.location && (
+                        <p className="text-sm text-navy/50 font-sans leading-relaxed tracking-wide">
+                          · {event.location}
+                        </p>
+                      )}
+                      {event.notes && (
+                        <p className="text-sm text-navy/35 font-sans leading-relaxed italic">
+                          {event.notes}
+                        </p>
+                      )}
+                    </div>
                   </article>
                 </FadeIn>
               ))}
@@ -324,7 +370,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
             </div>
             <Link
               href={`/${slug}/rsvp`}
-              className="inline-flex items-center px-10 py-4 bg-white/10 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-white hover:text-navy transition-all duration-300"
+              className="inline-flex items-center px-10 py-4 bg-white/10 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-[var(--wedding-accent)] hover:border-[var(--wedding-accent)] hover:text-white transition-all duration-300"
             >
               RSVP Now
             </Link>

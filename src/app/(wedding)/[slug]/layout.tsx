@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import WeddingHeader from "@/components/wedding/WeddingHeader";
 import WeddingFooter from "@/components/wedding/WeddingFooter";
+import { getPalette } from "@/lib/weddingPalettes";
 
 export default async function WeddingLayout({
   children,
@@ -16,10 +17,21 @@ export default async function WeddingLayout({
 
   if (!wedding) notFound();
 
+  const palette = getPalette(wedding.colorPalette);
+
   return (
     <div
       className="wedding-page min-h-screen flex flex-col"
-      style={{ "--wedding-accent": wedding.accentColor } as React.CSSProperties}
+      data-dark={palette.dark ? "true" : undefined}
+      style={{
+        "--w-ivory":        palette.vars.ivory,
+        "--w-navy":         palette.vars.navy,
+        "--w-gold":         palette.vars.gold,
+        "--w-champagne":    palette.vars.champagne,
+        "--w-hero-start":   palette.vars.heroStart,
+        "--w-hero-mid":     palette.vars.heroMid,
+        "--wedding-accent": palette.vars.weddingAccent,
+      } as React.CSSProperties}
     >
       <WeddingHeader
         partner1={wedding.partner1Name}
