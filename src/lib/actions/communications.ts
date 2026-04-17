@@ -53,7 +53,7 @@ async function resolveRecipients(
       : filter === "not_responded"
       ? { group: { rsvpResponse: null } }
       : filter === "declined"
-      ? { group: { rsvpResponse: { isNot: null } } } // guests with a response (close enough)
+      ? { group: { rsvpResponse: { is: { eventResponses: { none: { attending: true } } } } } }
       : {};
 
   const guests = await db.guest.findMany({
@@ -210,17 +210,13 @@ export async function sendMessageAction(input: MessageInput) {
     totalFailed = results.filter((r) => r.status === "rejected").length;
   } else {
     const client = getTwilioClient();
+    if (!client) throw new Error("SMS is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER.");
     const from = process.env.TWILIO_PHONE_NUMBER ?? "";
 
     const results = await Promise.allSettled(
-      recipients.map((r) => {
-        if (!client) return Promise.resolve();
-        return client.messages.create({
-          body: parsed.data.body,
-          from,
-          to: r.phone!,
-        });
-      })
+      recipients.map((r) =>
+        client.messages.create({ body: parsed.data.body, from, to: r.phone! })
+      )
     );
     totalSent = results.filter((r) => r.status === "fulfilled").length;
     totalFailed = results.filter((r) => r.status === "rejected").length;
@@ -348,17 +344,13 @@ export async function resendMessageAction(id: string) {
     totalFailed = results.filter((r) => r.status === "rejected").length;
   } else {
     const client = getTwilioClient();
+    if (!client) throw new Error("SMS is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER.");
     const from = process.env.TWILIO_PHONE_NUMBER ?? "";
 
     const results = await Promise.allSettled(
-      recipients.map((r) => {
-        if (!client) return Promise.resolve();
-        return client.messages.create({
-          body: existing.body,
-          from,
-          to: r.phone!,
-        });
-      })
+      recipients.map((r) =>
+        client.messages.create({ body: existing.body, from, to: r.phone! })
+      )
     );
     totalSent = results.filter((r) => r.status === "fulfilled").length;
     totalFailed = results.filter((r) => r.status === "rejected").length;

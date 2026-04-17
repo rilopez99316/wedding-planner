@@ -6,7 +6,11 @@ import ReminderEmail from "@/emails/reminder";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = `${process.env.RESEND_FROM_NAME ?? "Vows"} <${process.env.RESEND_FROM_EMAIL ?? "noreply@vows.app"}>`;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("NEXT_PUBLIC_APP_URL must be set in production"); })()
+    : "http://localhost:3000");
 
 export async function sendInvitationEmail({
   to,

@@ -40,55 +40,59 @@ export async function POST(
   const data = parsed.data;
   const wedding = guest.group.wedding;
 
-  // Upsert the RSVP response
-  const rsvp = await db.rsvpResponse.upsert({
-    where:  { groupId: guest.groupId },
-    create: {
-      groupId:         guest.groupId,
-      plusOneAttending: data.plusOneAttending,
-      plusOneName:     data.plusOneName || null,
-      eventResponses: {
-        create: data.eventAttendance.map((e) => ({
-          eventKey:  e.eventKey,
-          attending: e.attending,
-        })),
-      },
-    },
-    update: {
-      plusOneAttending: data.plusOneAttending,
-      plusOneName:     data.plusOneName || null,
-      updatedAt:       new Date(),
-      eventResponses: {
-        deleteMany: {},
-        create: data.eventAttendance.map((e) => ({
-          eventKey:  e.eventKey,
-          attending: e.attending,
-        })),
-      },
-    },
-  });
-
-  // Save dietary restrictions — only for guests that belong to this group
+  // Fetch group guest IDs before the transaction (read-only, no contention)
   const groupGuestIds = new Set(
     (await db.guest.findMany({ where: { groupId: guest.groupId }, select: { id: true } }))
       .map((g) => g.id)
   );
 
-  for (const d of data.dietary) {
-    if (!groupGuestIds.has(d.guestId)) continue;
-    await db.dietaryRestriction.deleteMany({ where: { guestId: d.guestId } });
-    if (d.restrictions.length > 0) {
-      await db.dietaryRestriction.createMany({
-        data: d.restrictions.map((r) => ({
-          guestId:    d.guestId,
-          restriction: r,
-          notes:      d.otherNotes || null,
-        })),
-      });
-    }
-  }
+  // Upsert RSVP and dietary restrictions atomically
+  const rsvp = await db.$transaction(async (tx) => {
+    const rsvpRecord = await tx.rsvpResponse.upsert({
+      where:  { groupId: guest.groupId },
+      create: {
+        groupId:          guest.groupId,
+        plusOneAttending: data.plusOneAttending,
+        plusOneName:      data.plusOneName || null,
+        eventResponses: {
+          create: data.eventAttendance.map((e) => ({
+            eventKey:  e.eventKey,
+            attending: e.attending,
+          })),
+        },
+      },
+      update: {
+        plusOneAttending: data.plusOneAttending,
+        plusOneName:      data.plusOneName || null,
+        updatedAt:        new Date(),
+        eventResponses: {
+          deleteMany: {},
+          create: data.eventAttendance.map((e) => ({
+            eventKey:  e.eventKey,
+            attending: e.attending,
+          })),
+        },
+      },
+    });
 
-  // Send confirmation email
+    for (const d of data.dietary) {
+      if (!groupGuestIds.has(d.guestId)) continue;
+      await tx.dietaryRestriction.deleteMany({ where: { guestId: d.guestId } });
+      if (d.restrictions.length > 0) {
+        await tx.dietaryRestriction.createMany({
+          data: d.restrictions.map((r) => ({
+            guestId:    d.guestId,
+            restriction: r,
+            notes:      d.otherNotes || null,
+          })),
+        });
+      }
+    }
+
+    return rsvpRecord;
+  });
+
+  // Send confirmation email — non-fatal, RSVP already committed
   if (guest.email) {
     const attending = data.eventAttendance.some((e) => e.attending);
     try {

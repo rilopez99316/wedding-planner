@@ -274,7 +274,7 @@ export async function addCeremonyItemAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = ceremonyItemSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
+  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
 
   const wedding = await getWeddingForUser(session.user.id);
   const program = await getOrCreateProgram(wedding.id);
@@ -306,7 +306,7 @@ export async function updateCeremonyItemAction(id: string, formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = ceremonyItemSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
+  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
 
   const wedding = await getWeddingForUser(session.user.id);
   const program = await db.ceremonyProgram.findUnique({ where: { weddingId: wedding.id } });
