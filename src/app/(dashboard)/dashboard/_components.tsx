@@ -502,7 +502,9 @@ export function buildJourneyCards(stats: {
       stat: stats.tableCount === 0 ? "No tables" : `${stats.assignedSeats} seated`,
       status: stats.tableCount === 0
         ? "not-started"
-        : stats.confirmedAttending > 0 && stats.assignedSeats >= stats.confirmedAttending
+        : stats.confirmedAttending === 0
+        ? "not-started"
+        : stats.assignedSeats >= stats.confirmedAttending
         ? "on-track"
         : "in-progress",
       href: "/dashboard/seating",

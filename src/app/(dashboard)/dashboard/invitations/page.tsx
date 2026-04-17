@@ -27,13 +27,6 @@ export default async function InvitationsPage() {
   const wedding = await getInvitationData(session.user.id);
   if (!wedding) redirect("/dashboard");
 
-  const notInvited = wedding.guestGroups.filter(
-    (g) => !g.guests.some((gu) => gu.invitationSentAt)
-  ).length;
-  const notResponded = wedding.guestGroups.filter(
-    (g) => g.guests.some((gu) => gu.invitationSentAt) && !g.rsvpResponse
-  ).length;
-
   return (
     <DashboardShell
       heading="Invitations"

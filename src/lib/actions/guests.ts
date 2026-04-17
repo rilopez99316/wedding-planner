@@ -135,7 +135,14 @@ export async function searchGuestsAction(query: string, weddingId: string) {
       ],
     },
     include: {
-      guests: true,
+      guests: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          isPlusOne: true,
+        },
+      },
       allowedEvents: { include: { event: true } },
       rsvpResponse: true,
     },

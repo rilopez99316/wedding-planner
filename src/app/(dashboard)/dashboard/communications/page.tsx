@@ -41,13 +41,8 @@ export default async function CommunicationsPage() {
     (sum, m) => sum + (m.totalSent ?? 0),
     0
   );
-  const scheduledCount = wedding.guestMessages.filter(
-    (m) => m.status === "scheduled"
-  ).length;
-
   const subheadingParts: string[] = [];
   if (totalSent > 0) subheadingParts.push(`${totalSent} message${totalSent !== 1 ? "s" : ""} sent`);
-  if (scheduledCount > 0) subheadingParts.push(`${scheduledCount} scheduled`);
 
   return (
     <DashboardShell
@@ -66,7 +61,7 @@ export default async function CommunicationsPage() {
           createdAt: m.createdAt.toISOString(),
           updatedAt: m.updatedAt.toISOString(),
         }))}
-        stats={{ totalSent, guestsReached, scheduledCount }}
+        stats={{ totalSent, guestsReached }}
         guestCounts={{ total: guestCount, attending: attendingCount }}
       />
     </DashboardShell>

@@ -68,8 +68,14 @@ export async function POST(
     },
   });
 
-  // Save dietary restrictions
+  // Save dietary restrictions — only for guests that belong to this group
+  const groupGuestIds = new Set(
+    (await db.guest.findMany({ where: { groupId: guest.groupId }, select: { id: true } }))
+      .map((g) => g.id)
+  );
+
   for (const d of data.dietary) {
+    if (!groupGuestIds.has(d.guestId)) continue;
     await db.dietaryRestriction.deleteMany({ where: { guestId: d.guestId } });
     if (d.restrictions.length > 0) {
       await db.dietaryRestriction.createMany({

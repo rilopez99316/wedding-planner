@@ -41,7 +41,8 @@ function verifyVowsToken(
     if (!crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) return false;
     const [p, w, expiresStr] = payload.split(":");
     if (p !== partner || w !== weddingId) return false;
-    if (Date.now() > parseInt(expiresStr, 10)) return false;
+    const expires = parseInt(expiresStr, 10);
+    if (isNaN(expires) || Date.now() > expires) return false;
     return true;
   } catch {
     return false;

@@ -121,7 +121,8 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
 
   async function handleSendGroup(groupId: string, guestId: string) {
     setSendingGroupId(groupId);
-    await sendInvitationsAction([guestId]);
+    const res = await sendInvitationsAction([guestId]);
+    setResult(res);
     setSendingGroupId(null);
     router.refresh();
   }
