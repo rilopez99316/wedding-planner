@@ -98,7 +98,7 @@ export async function addBudgetCategoryAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = budgetCategorySchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
+  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
 
   const wedding = await getWeddingForUser(session.user.id);
 
@@ -166,7 +166,7 @@ export async function addBudgetItemAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = budgetItemSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
+  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
 
   const wedding = await getWeddingForUser(session.user.id);
   const data = parsed.data;

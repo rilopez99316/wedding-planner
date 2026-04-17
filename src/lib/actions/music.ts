@@ -99,7 +99,7 @@ export async function addMusicSongAction(data: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = songSchema.safeParse(data);
-  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
+  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
 
   const wedding = await getWeddingForUser(session.user.id);
   const plan = await getOrCreateMusicPlan(wedding.id);

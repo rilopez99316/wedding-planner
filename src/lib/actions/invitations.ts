@@ -32,20 +32,10 @@ export async function sendInvitationsAction(guestIds: string[]) {
 
   for (const guest of guests) {
     try {
-      // Generate token atomically — only writes when the field is still null,
-      // so concurrent calls for the same guest converge on a single token.
-      let token = guest.invitationToken;
-      if (!token) {
-        const newToken = nanoid(21);
-        // Atomic write: only sets the token when it is still null.
-        // If a concurrent call already set it, the count will be 0 and we re-fetch.
-        const { count } = await db.guest.updateMany({
-          where: { id: guest.id, invitationToken: null },
-          data:  { invitationToken: newToken },
-        });
-        token = count > 0
-          ? newToken
-          : (await db.guest.findUniqueOrThrow({ where: { id: guest.id }, select: { invitationToken: true } })).invitationToken!;
+      // Generate token if none exists
+      const token = guest.invitationToken ?? nanoid(21);
+      if (!guest.invitationToken) {
+        await db.guest.update({ where: { id: guest.id }, data: { invitationToken: token } });
       }
 
       const guestName = `${guest.firstName} ${guest.lastName}`;

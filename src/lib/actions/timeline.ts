@@ -44,7 +44,7 @@ export async function addTimelineEventAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = timelineEventSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
+  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
 
   const wedding = await getWeddingForUser(session.user.id);
 
@@ -78,7 +78,7 @@ export async function updateTimelineEventAction(id: string, formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = timelineEventSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
+  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
 
   const wedding = await getWeddingForUser(session.user.id);
 

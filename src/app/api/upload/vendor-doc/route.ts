@@ -9,29 +9,14 @@ function getSupabase() {
   return createClient(url, key);
 }
 
-// Verify actual file bytes rather than the client-supplied MIME type.
-function detectDocMime(buf: Uint8Array): { mime: string; ext: string } | null {
-  // PDF: %PDF
-  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46)
-    return { mime: "application/pdf", ext: "pdf" };
-  // DOCX / Office Open XML (PK zip header)
-  if (buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04)
-    return { mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ext: "docx" };
-  // Legacy DOC (Compound Document: D0 CF 11 E0)
-  if (buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0)
-    return { mime: "application/msword", ext: "doc" };
-  // JPEG
-  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff)
-    return { mime: "image/jpeg", ext: "jpg" };
-  // PNG
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
-    return { mime: "image/png", ext: "png" };
-  // WebP (RIFF....WEBP)
-  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
-      buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50)
-    return { mime: "image/webp", ext: "webp" };
-  return null;
-}
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -46,33 +31,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  if (file.size > 20 * 1024 * 1024) {
-    return NextResponse.json({ error: "File must be under 20MB" }, { status: 400 });
-  }
-
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = new Uint8Array(arrayBuffer);
-
-  const detected = detectDocMime(buffer);
-  if (!detected) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
       { error: "Only PDF, Word documents, and images are allowed" },
       { status: 400 }
     );
   }
 
+  if (file.size > 20 * 1024 * 1024) {
+    return NextResponse.json({ error: "File must be under 20MB" }, { status: 400 });
+  }
+
+  const ext = file.name.split(".").pop() ?? "bin";
   const safeName = file.name
     .replace(/\.[^/.]+$/, "")
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .slice(0, 60);
-  const fileName = `${session.user.id}/vendor-docs/${Date.now()}-${safeName}.${detected.ext}`;
+  const fileName = `${session.user.id}/vendor-docs/${Date.now()}-${safeName}.${ext}`;
 
   const supabase = getSupabase();
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = new Uint8Array(arrayBuffer);
 
   const { error } = await supabase.storage
     .from("wedding-photos")
     .upload(fileName, buffer, {
-      contentType: detected.mime,
+      contentType: file.type,
       upsert: false,
     });
 

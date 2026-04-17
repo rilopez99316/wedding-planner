@@ -137,8 +137,6 @@ model GuestGroup {
   guests        Guest[]
   allowedEvents GuestGroupEvent[]
   rsvpResponse  RsvpResponse?
-
-  @@index([weddingId])
 }
 
 model GuestGroupEvent {
@@ -169,9 +167,6 @@ model Guest {
   dietaryRestrictions DietaryRestriction[]
   seatingAssignment   SeatingAssignment?
   gifts               Gift[]
-
-  @@index([weddingId])
-  @@index([groupId])
 }
 
 model RsvpResponse {
@@ -195,7 +190,6 @@ model EventResponse {
   attending Boolean
 
   @@unique([rsvpId, eventKey])
-  @@index([rsvpId])
 }
 
 model DietaryRestriction {
@@ -204,8 +198,6 @@ model DietaryRestriction {
   guest       Guest   @relation(fields: [guestId], references: [id], onDelete: Cascade)
   restriction String
   notes       String?
-
-  @@index([guestId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
