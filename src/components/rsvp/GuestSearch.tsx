@@ -105,7 +105,7 @@ export default function GuestSearch({ weddingId, onSelect }: GuestSearchProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-20 left-0 right-0 mt-2 bg-white border border-gold/15 rounded-xl shadow-apple-lg overflow-hidden"
+            className="absolute z-20 left-0 right-0 mt-2 bg-ivory border border-gold/15 rounded-xl shadow-apple-lg overflow-hidden"
           >
             {loading ? (
               <li className="px-5 py-6 text-center">

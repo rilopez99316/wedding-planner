@@ -34,9 +34,12 @@ function pad(n: number) {
 
 export default function DeadlineCountdown({ rsvpDeadline, rsvpHref, dark = false }: DeadlineCountdownProps) {
   const deadline = new Date(rsvpDeadline);
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => getTimeLeft(deadline));
+  const [mounted, setMounted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+    setTimeLeft(getTimeLeft(deadline));
     const id = setInterval(() => setTimeLeft(getTimeLeft(deadline)), 1000);
     return () => clearInterval(id);
   }, [rsvpDeadline]);
@@ -46,6 +49,8 @@ export default function DeadlineCountdown({ rsvpDeadline, rsvpHref, dark = false
   const numColor   = dark ? "text-white" : "text-navy";
   const labelColor = dark ? "text-white/35" : "text-navy/35";
   const divColor   = dark ? "bg-white/10"  : "bg-gold/20";
+
+  if (!mounted) return null;
 
   if (timeLeft === null) {
     return (

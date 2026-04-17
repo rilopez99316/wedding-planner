@@ -64,7 +64,7 @@ export default async function RegistryPage({ params }: { params: { slug: string 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden pt-36 pb-28 flex flex-col items-center text-center"
-        style={{ background: "linear-gradient(160deg, #1B2A4A 0%, #0f1a2e 60%, #1a1530 100%)" }}
+        style={{ background: "linear-gradient(160deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 60%, rgb(var(--w-hero-mid)) 100%)" }}
       >
         {/* Ghost background text */}
         <span
@@ -116,11 +116,11 @@ export default async function RegistryPage({ params }: { params: { slug: string 
           </FadeIn>
         </div>
 
-        {/* Fade into ivory */}
+        {/* Fade into page background */}
         <div
           aria-hidden="true"
           className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, transparent, rgb(253 250 245))" }}
+          style={{ background: "linear-gradient(to bottom, transparent, rgb(var(--w-ivory)))" }}
         />
       </section>
 
@@ -246,7 +246,8 @@ export default async function RegistryPage({ params }: { params: { slug: string 
                     href={r.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative bg-navy rounded-2xl p-8 overflow-hidden hover:brightness-110 transition-all duration-300 block min-h-44"
+                    className="group relative rounded-2xl p-8 overflow-hidden hover:brightness-110 transition-all duration-300 block min-h-44"
+                    style={{ background: "rgb(var(--w-hero-start))" }}
                   >
                     {/* Decorative concentric rings */}
                     <svg

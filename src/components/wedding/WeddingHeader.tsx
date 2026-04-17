@@ -64,11 +64,12 @@ export default function WeddingHeader({ partner1, partner2, slug, hasCoverPhoto 
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "text-[10px] tracking-[0.25em] uppercase font-sans px-5 py-2 transition-all duration-300",
+                    "text-[10px] tracking-[0.25em] uppercase font-sans px-5 py-2 transition-all duration-300 text-white hover:brightness-110",
                     transparent
-                      ? "border border-white/50 text-white hover:bg-white hover:text-navy"
-                      : "bg-navy text-champagne hover:brightness-110"
+                      ? "border border-white/50 hover:bg-[var(--wedding-accent)] hover:border-[var(--wedding-accent)]"
+                      : ""
                   )}
+                  style={!transparent ? { background: "var(--wedding-accent)" } : undefined}
                 >
                   RSVP
                 </Link>

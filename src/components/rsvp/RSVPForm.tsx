@@ -70,7 +70,7 @@ function StepIndicator({ step }: { step: Step }) {
 function GuestRow({ firstName, lastName }: { firstName: string; lastName: string }) {
   const initials = [firstName[0], lastName[0]].filter(Boolean).join("").toUpperCase();
   return (
-    <div className="flex items-center gap-4 px-5 py-4 rounded-xl border border-gold/15 bg-white/60">
+    <div className="flex items-center gap-4 px-5 py-4 rounded-xl border border-gold/15 bg-ivory">
       <div className="w-9 h-9 rounded-full bg-champagne flex items-center justify-center shrink-0">
         <span className="font-serif text-sm font-light text-navy/70">{initials}</span>
       </div>
@@ -165,7 +165,7 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
 
               {group.hasPlusOne && (
                 <div className="space-y-3 pt-1">
-                  <label className="flex items-center gap-4 px-5 py-4 rounded-xl border border-navy/10 bg-white/50 cursor-pointer hover:border-gold/40 transition-colors duration-200">
+                  <label className="flex items-center gap-4 px-5 py-4 rounded-xl border border-navy/10 bg-ivory cursor-pointer hover:border-gold/40 transition-colors duration-200">
                     <input
                       type="checkbox"
                       checked={plusOneAttending}
@@ -251,7 +251,7 @@ export default function RSVPForm({ wedding, group, onComplete, onBack }: RSVPFor
                       "transition-all duration-200",
                       attending
                         ? "border-gold/40 bg-champagne/25 shadow-apple-xs"
-                        : "border-navy/10 bg-white/50 hover:border-gold/30",
+                        : "border-navy/10 bg-ivory hover:border-gold/30",
                     ].join(" ")}
                   >
                     <div>

@@ -31,10 +31,13 @@ const config: Config = {
           dark:    "#0058B3",
         },
         // ── Wedding palette (public wedding pages) ──────────────────────
-        navy:      "rgb(27 42 74 / <alpha-value>)",
-        champagne: "rgb(245 230 200 / <alpha-value>)",
-        ivory:     "rgb(253 250 245 / <alpha-value>)",
-        gold:      "rgb(201 168 76 / <alpha-value>)",
+        // Values are driven by CSS variables so each couple's chosen palette
+        // cascades to all Tailwind classes (bg-ivory, text-navy, bg-gold…)
+        // without any component rewrites.
+        navy:      "rgb(var(--w-navy) / <alpha-value>)",
+        champagne: "rgb(var(--w-champagne) / <alpha-value>)",
+        ivory:     "rgb(var(--w-ivory) / <alpha-value>)",
+        gold:      "rgb(var(--w-gold) / <alpha-value>)",
       },
       fontFamily: {
         sans:  ["var(--font-inter)", "system-ui", "sans-serif"],

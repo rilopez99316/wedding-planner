@@ -58,7 +58,7 @@ export default async function SchedulePage({ params }: { params: { slug: string 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden pt-36 pb-28 flex flex-col items-center text-center"
-        style={{ background: "linear-gradient(160deg, #1B2A4A 0%, #0f1a2e 60%, #1a1530 100%)" }}
+        style={{ background: "linear-gradient(160deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 60%, rgb(var(--w-hero-mid)) 100%)" }}
       >
         {/* Ghost background text */}
         <span
@@ -110,11 +110,11 @@ export default async function SchedulePage({ params }: { params: { slug: string 
           </FadeIn>
         </div>
 
-        {/* Fade into ivory */}
+        {/* Fade into page background */}
         <div
           aria-hidden="true"
           className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, transparent, rgb(253 250 245))" }}
+          style={{ background: "linear-gradient(to bottom, transparent, rgb(var(--w-ivory)))" }}
         />
       </section>
 
@@ -138,7 +138,7 @@ export default async function SchedulePage({ params }: { params: { slug: string 
               className="hidden md:block absolute left-1/2 -translate-x-1/2 top-8 bottom-8 w-px pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(to bottom, transparent 0%, rgba(201,168,76,0.25) 8%, rgba(201,168,76,0.25) 92%, transparent 100%)",
+                  "linear-gradient(to bottom, transparent 0%, rgb(var(--w-gold) / 0.25) 8%, rgb(var(--w-gold) / 0.25) 92%, transparent 100%)",
               }}
             />
 
@@ -173,17 +173,17 @@ export default async function SchedulePage({ params }: { params: { slug: string 
                       {/* Mobile timeline dot */}
                       <div
                         className="md:hidden absolute left-0 top-10 w-3.5 h-3.5 rounded-full bg-ivory border-2 border-gold"
-                        style={{ boxShadow: "0 0 0 5px rgba(201,168,76,0.1)" }}
+                        style={{ boxShadow: "0 0 0 5px rgb(var(--w-gold) / 0.1)" }}
                       />
 
                       {/* Event card */}
                       <article
                         className={[
                           "relative w-full overflow-hidden rounded-2xl",
-                          "bg-white/65 backdrop-blur-sm border border-gold/10",
+                          "bg-ivory/65 backdrop-blur-sm border border-gold/10",
                           "px-7 py-8",
                           "transition-all duration-300",
-                          "hover:border-gold/30 hover:shadow-apple-md hover:bg-white/85",
+                          "hover:border-gold/30 hover:shadow-apple-md hover:bg-ivory/85",
                           "md:w-[calc(50%-2.75rem)]",
                         ].join(" ")}
                       >
@@ -231,7 +231,7 @@ export default async function SchedulePage({ params }: { params: { slug: string 
                       <div className="hidden md:flex w-[5.5rem] shrink-0 items-center justify-center z-10">
                         <div
                           className="w-4 h-4 rounded-full bg-ivory border-2 border-gold"
-                          style={{ boxShadow: "0 0 0 5px rgba(201,168,76,0.1)" }}
+                          style={{ boxShadow: "0 0 0 5px rgb(var(--w-gold) / 0.1)" }}
                         />
                       </div>
 

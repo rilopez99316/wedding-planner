@@ -28,6 +28,7 @@ export default async function SettingsPage() {
           venueName:    wedding.venueName ?? "",
           venueAddress: wedding.venueAddress ?? "",
           accentColor:   wedding.accentColor,
+          colorPalette:  wedding.colorPalette,
           coverPhotoUrl: wedding.coverPhotoUrl ?? "",
           slug:          wedding.slug,
         }}

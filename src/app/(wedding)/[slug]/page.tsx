@@ -54,7 +54,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, #1B2A4A 0%, #0f1a2e 50%, #2a1f3d 100%)",
+              background: "linear-gradient(135deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 50%, rgb(var(--w-hero-mid)) 100%)",
             }}
           >
             {/* Subtle texture overlay */}
@@ -123,7 +123,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
             <div className="mt-12">
               <Link
                 href={`/${slug}/rsvp`}
-                className="inline-flex items-center gap-3 px-10 py-4 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-white hover:text-navy transition-all duration-300"
+                className="inline-flex items-center gap-3 px-10 py-4 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-[var(--wedding-accent)] hover:border-[var(--wedding-accent)] hover:text-white transition-all duration-300"
               >
                 Kindly RSVP
               </Link>
@@ -141,7 +141,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
       {/* ── Countdown ────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden py-24 px-6"
-        style={{ background: "linear-gradient(180deg, #1B2A4A 0%, #0f1a2e 100%)" }}
+        style={{ background: "linear-gradient(180deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 100%)" }}
       >
         {/* Texture */}
         <div
@@ -184,7 +184,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
             <div className={`grid grid-cols-1 gap-6 ${events.length === 2 ? "md:grid-cols-2" : events.length >= 3 ? "md:grid-cols-3" : ""}`}>
               {events.map((event, i) => (
                 <FadeIn key={event.id} direction="up" delay={i * 0.09}>
-                  <article className="group relative bg-white rounded-2xl overflow-hidden shadow-apple-md ring-1 ring-navy/8 hover:shadow-apple-lg hover:-translate-y-0.5 transition-all duration-300">
+                  <article className="group relative bg-ivory rounded-2xl overflow-hidden shadow-apple-md ring-1 ring-navy/8 hover:shadow-apple-lg hover:-translate-y-0.5 transition-all duration-300">
                     {/* Gold left accent bar */}
                     <div className="absolute left-0 inset-y-0 w-[3px] bg-gradient-to-b from-gold via-gold/60 to-gold/20" />
 
@@ -370,7 +370,7 @@ export default async function WeddingHomePage({ params }: { params: { slug: stri
             </div>
             <Link
               href={`/${slug}/rsvp`}
-              className="inline-flex items-center px-10 py-4 bg-white/10 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-white hover:text-navy transition-all duration-300"
+              className="inline-flex items-center px-10 py-4 bg-white/10 border border-white/40 text-white text-[10px] tracking-[0.3em] uppercase font-sans backdrop-blur-sm hover:bg-[var(--wedding-accent)] hover:border-[var(--wedding-accent)] hover:text-white transition-all duration-300"
             >
               RSVP Now
             </Link>
