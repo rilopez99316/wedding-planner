@@ -249,6 +249,8 @@ model BudgetItem {
   weddingId     String
   categoryId    String
   category      BudgetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendorId      String?
+  vendor        Vendor?        @relation(fields: [vendorId], references: [id], onDelete: SetNull)
   name          String
   estimatedCost Float          @default(0)
   actualCost    Float?
@@ -266,21 +268,26 @@ model BudgetItem {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Vendor {
-  id          String          @id @default(cuid())
-  weddingId   String
-  wedding     Wedding         @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  category    String          // "venue" | "photographer" | "caterer" | "florist" | "dj" | "other"
-  name        String
-  contactName String?
-  email       String?
-  phone       String?
-  website     String?
-  notes       String?
-  status      String          @default("prospect") // "prospect" | "shortlisted" | "booked" | "rejected"
-  packages    VendorPackage[]
-  documents   VendorDocument[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id              String           @id @default(cuid())
+  weddingId       String
+  wedding         Wedding          @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category        String           // "venue" | "photographer" | "caterer" | "florist" | "dj" | "officiant" | "hairMakeup" | "transportation" | "cake" | "stationery" | "other"
+  name            String
+  contactName     String?
+  email           String?
+  phone           String?
+  website         String?
+  notes           String?
+  status          String           @default("prospect") // "prospect" | "shortlisted" | "booked" | "rejected"
+  lastContactedAt DateTime?
+  followUpDate    DateTime?
+  packages        VendorPackage[]
+  documents       VendorDocument[]
+  payments        VendorPayment[]
+  meetings        VendorMeeting[]
+  budgetItems     BudgetItem[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model VendorPackage {
@@ -303,6 +310,31 @@ model VendorDocument {
   url       String
   fileType  String
   fileSize  Int?
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
+}
+
+model VendorPayment {
+  id        String    @id @default(cuid())
+  vendorId  String
+  vendor    Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  label     String
+  amount    Float
+  dueDate   DateTime
+  paidAt    DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+
+  @@index([vendorId])
+}
+
+model VendorMeeting {
+  id        String   @id @default(cuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  date      DateTime
+  notes     String   @db.Text
   createdAt DateTime @default(now())
 
   @@index([vendorId])

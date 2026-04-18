@@ -10,19 +10,26 @@ import { addVendorAction, updateVendorAction, addPackageAction, deletePackageAct
 import type { VendorWithPackages } from "@/components/dashboard/VendorCard";
 import type { VendorDocument, VendorPackage } from "@prisma/client";
 import VendorDocumentsTab from "@/components/dashboard/VendorDocumentsTab";
+import VendorPaymentsTab from "@/components/dashboard/VendorPaymentsTab";
+import VendorMeetingsTab from "@/components/dashboard/VendorMeetingsTab";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type Category = "venue" | "photographer" | "caterer" | "florist" | "dj" | "other";
-type Tab = "info" | "packages" | "documents";
+type Category = "venue" | "photographer" | "caterer" | "florist" | "dj" | "officiant" | "hairMakeup" | "transportation" | "cake" | "stationery" | "other";
+type Tab = "info" | "packages" | "documents" | "payments" | "meetings";
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: "venue",        label: "Venue" },
-  { value: "photographer", label: "Photographer" },
-  { value: "caterer",      label: "Caterer" },
-  { value: "florist",      label: "Florist" },
-  { value: "dj",           label: "DJ / Entertainment" },
-  { value: "other",        label: "Other" },
+  { value: "venue",          label: "Venue" },
+  { value: "photographer",   label: "Photographer" },
+  { value: "caterer",        label: "Caterer" },
+  { value: "florist",        label: "Florist" },
+  { value: "dj",             label: "DJ / Entertainment" },
+  { value: "officiant",      label: "Officiant" },
+  { value: "hairMakeup",     label: "Hair & Makeup" },
+  { value: "transportation", label: "Transportation" },
+  { value: "cake",           label: "Cake" },
+  { value: "stationery",     label: "Stationery" },
+  { value: "other",          label: "Other" },
 ];
 
 interface PackageRow {
@@ -49,18 +56,20 @@ interface AddVendorDialogProps {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function AddVendorDialog({ open, onOpenChange, editingVendor, onSuccess }: AddVendorDialogProps) {
-  const [tab,         setTab]         = useState<Tab>("info");
-  const [category,    setCategory]    = useState<Category>("venue");
-  const [name,        setName]        = useState("");
-  const [contactName, setContactName] = useState("");
-  const [email,       setEmail]       = useState("");
-  const [phone,       setPhone]       = useState("");
-  const [website,     setWebsite]     = useState("");
-  const [notes,       setNotes]       = useState("");
-  const [packages,       setPackages]       = useState<PackageRow[]>([emptyPackageRow()]);
-  const [localDocuments, setLocalDocuments] = useState<VendorDocument[]>([]);
-  const [loading,        setLoading]        = useState(false);
-  const [error,          setError]          = useState("");
+  const [tab,             setTab]             = useState<Tab>("info");
+  const [category,        setCategory]        = useState<Category>("venue");
+  const [name,            setName]            = useState("");
+  const [contactName,     setContactName]     = useState("");
+  const [email,           setEmail]           = useState("");
+  const [phone,           setPhone]           = useState("");
+  const [website,         setWebsite]         = useState("");
+  const [notes,           setNotes]           = useState("");
+  const [lastContactedAt, setLastContactedAt] = useState("");
+  const [followUpDate,    setFollowUpDate]    = useState("");
+  const [packages,        setPackages]        = useState<PackageRow[]>([emptyPackageRow()]);
+  const [localDocuments,  setLocalDocuments]  = useState<VendorDocument[]>([]);
+  const [loading,         setLoading]         = useState(false);
+  const [error,           setError]           = useState("");
 
   const isEditMode = !!editingVendor;
 
@@ -74,6 +83,16 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
       setPhone(editingVendor.phone ?? "");
       setWebsite(editingVendor.website ?? "");
       setNotes(editingVendor.notes ?? "");
+      setLastContactedAt(
+        editingVendor.lastContactedAt
+          ? new Date(editingVendor.lastContactedAt).toISOString().split("T")[0]
+          : ""
+      );
+      setFollowUpDate(
+        editingVendor.followUpDate
+          ? new Date(editingVendor.followUpDate).toISOString().split("T")[0]
+          : ""
+      );
       setPackages(
         editingVendor.packages.length > 0
           ? editingVendor.packages.map((p) => ({
@@ -96,6 +115,8 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
       setPhone("");
       setWebsite("");
       setNotes("");
+      setLastContactedAt("");
+      setFollowUpDate("");
       setPackages([emptyPackageRow()]);
       setLocalDocuments([]);
     }
@@ -124,12 +145,14 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
 
     const vendorPayload = {
       category,
-      name:        name.trim(),
-      contactName: contactName.trim() || null,
-      email:       email.trim() || null,
-      phone:       phone.trim() || null,
-      website:     website.trim() || null,
-      notes:       notes.trim() || null,
+      name:            name.trim(),
+      contactName:     contactName.trim() || null,
+      email:           email.trim() || null,
+      phone:           phone.trim() || null,
+      website:         website.trim() || null,
+      notes:           notes.trim() || null,
+      lastContactedAt: lastContactedAt ? new Date(lastContactedAt).toISOString() : null,
+      followUpDate:    followUpDate ? new Date(followUpDate).toISOString() : null,
     };
 
     setLoading(true);
@@ -140,7 +163,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
         vendor = await updateVendorAction(editingVendor.id, vendorPayload) as VendorWithPackages;
       } else {
         const created = await addVendorAction(vendorPayload);
-        vendor = { ...created, packages: [], documents: [] };
+        vendor = { ...created, packages: [], documents: [], payments: [], meetings: [], budgetItems: [] };
       }
 
       // Sync packages
@@ -212,27 +235,29 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                   </div>
 
                   {/* Tabs */}
-                  <div className="flex border-b border-gray-100 px-6 shrink-0">
-                    {(["info", "packages", "documents"] as Tab[]).map((t) => (
+                  <div className="flex border-b border-gray-100 px-6 shrink-0 overflow-x-auto">
+                    {([
+                      { key: "info",      label: "Info" },
+                      { key: "packages",  label: "Packages" },
+                      { key: "documents", label: "Documents", badge: localDocuments.length > 0 ? localDocuments.length : null },
+                      { key: "payments",  label: "Payments",  badge: isEditMode && editingVendor && (editingVendor.payments ?? []).filter(p => !p.paidAt).length > 0 ? (editingVendor.payments ?? []).filter(p => !p.paidAt).length : null },
+                      { key: "meetings",  label: "Meetings",  badge: null },
+                    ] as { key: Tab; label: string; badge: number | null }[]).map(({ key, label, badge }) => (
                       <button
-                        key={t}
+                        key={key}
                         type="button"
-                        onClick={() => setTab(t)}
+                        onClick={() => setTab(key)}
                         className={cn(
-                          "py-3 px-1 mr-5 text-sm font-medium border-b-2 -mb-px transition-colors",
-                          tab === t
+                          "py-3 px-1 mr-5 text-sm font-medium border-b-2 -mb-px transition-colors shrink-0 flex items-center gap-1.5",
+                          tab === key
                             ? "border-accent text-accent"
                             : "border-transparent text-gray-500 hover:text-gray-700"
                         )}
                       >
-                        {t === "info" ? "Info" : t === "packages" ? "Packages" : (
-                          <span className="flex items-center gap-1.5">
-                            Documents
-                            {localDocuments.length > 0 && (
-                              <span className="bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5 leading-none">
-                                {localDocuments.length}
-                              </span>
-                            )}
+                        {label}
+                        {badge != null && (
+                          <span className="bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5 leading-none">
+                            {badge}
                           </span>
                         )}
                       </button>
@@ -306,6 +331,22 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                               value={website}
                               onChange={(e) => setWebsite(e.target.value)}
                               placeholder="https://..."
+                            />
+                          </div>
+
+                          {/* Last contacted + Follow-up */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <Input
+                              label="Last contacted"
+                              type="date"
+                              value={lastContactedAt}
+                              onChange={(e) => setLastContactedAt(e.target.value)}
+                            />
+                            <Input
+                              label="Follow-up by"
+                              type="date"
+                              value={followUpDate}
+                              onChange={(e) => setFollowUpDate(e.target.value)}
                             />
                           </div>
 
@@ -416,6 +457,28 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                         ) : (
                           <div className="py-12 text-center text-sm text-gray-400">
                             Save the vendor first to attach documents.
+                          </div>
+                        )
+                      )}
+
+                      {/* PAYMENTS TAB */}
+                      {tab === "payments" && (
+                        isEditMode && editingVendor ? (
+                          <VendorPaymentsTab vendorId={editingVendor.id} initialPayments={editingVendor.payments} />
+                        ) : (
+                          <div className="py-12 text-center text-sm text-gray-400">
+                            Save the vendor first to add payment milestones.
+                          </div>
+                        )
+                      )}
+
+                      {/* MEETINGS TAB */}
+                      {tab === "meetings" && (
+                        isEditMode && editingVendor ? (
+                          <VendorMeetingsTab vendorId={editingVendor.id} initialMeetings={editingVendor.meetings} />
+                        ) : (
+                          <div className="py-12 text-center text-sm text-gray-400">
+                            Save the vendor first to log meeting notes.
                           </div>
                         )
                       )}

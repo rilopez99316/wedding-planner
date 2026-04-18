@@ -14,8 +14,11 @@ export default async function VendorsPage() {
   const vendors = await db.vendor.findMany({
     where:   { weddingId: wedding.id },
     include: {
-      packages:  { orderBy: { createdAt: "asc" } },
-      documents: { orderBy: { createdAt: "asc" } },
+      packages:    { orderBy: { createdAt: "asc" } },
+      documents:   { orderBy: { createdAt: "asc" } },
+      payments:    { orderBy: { dueDate: "asc" } },
+      meetings:    { orderBy: { date: "desc" } },
+      budgetItems: true,
     },
     orderBy: { createdAt: "asc" },
   });
@@ -25,7 +28,7 @@ export default async function VendorsPage() {
       heading="Vendors"
       subheading={`${vendors.length} vendor${vendors.length !== 1 ? "s" : ""}`}
     >
-      <VendorsClient initialVendors={vendors} />
+      <VendorsClient initialVendors={vendors} totalBudget={wedding.totalBudget} />
     </DashboardShell>
   );
 }

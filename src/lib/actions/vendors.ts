@@ -16,13 +16,27 @@ async function getWeddingForUser(userId: string) {
 // ── Schemas ────────────────────────────────────────────────────────────────
 
 const vendorSchema = z.object({
-  category:    z.enum(["venue", "photographer", "caterer", "florist", "dj", "other"]),
-  name:        z.string().min(1, "Vendor name is required").max(120),
-  contactName: z.string().max(120).optional().nullable(),
-  email:       z.string().email("Invalid email").max(200).optional().nullable().or(z.literal("")),
-  phone:       z.string().max(40).optional().nullable(),
-  website:     z.string().max(300).optional().nullable(),
-  notes:       z.string().max(1000).optional().nullable(),
+  category:        z.enum(["venue", "photographer", "caterer", "florist", "dj", "officiant", "hairMakeup", "transportation", "cake", "stationery", "other"]),
+  name:            z.string().min(1, "Vendor name is required").max(120),
+  contactName:     z.string().max(120).optional().nullable(),
+  email:           z.string().email("Invalid email").max(200).optional().nullable().or(z.literal("")),
+  phone:           z.string().max(40).optional().nullable(),
+  website:         z.string().max(300).optional().nullable(),
+  notes:           z.string().max(1000).optional().nullable(),
+  lastContactedAt: z.string().datetime().optional().nullable(),
+  followUpDate:    z.string().datetime().optional().nullable(),
+});
+
+const paymentSchema = z.object({
+  label:   z.string().min(1, "Label is required").max(120),
+  amount:  z.number().min(0),
+  dueDate: z.string().datetime(),
+  notes:   z.string().max(500).optional().nullable(),
+});
+
+const meetingSchema = z.object({
+  date:  z.string().datetime(),
+  notes: z.string().min(1, "Notes are required").max(2000),
 });
 
 const packageSchema = z.object({
@@ -48,6 +62,9 @@ export async function getVendorsAction() {
     include: {
       packages:  { orderBy: { createdAt: "asc" } },
       documents: { orderBy: { createdAt: "asc" } },
+      payments:  { orderBy: { dueDate: "asc" } },
+      meetings:  { orderBy: { date: "desc" } },
+      budgetItems: true,
     },
     orderBy: { createdAt: "asc" },
   });
@@ -65,14 +82,16 @@ export async function addVendorAction(formData: unknown) {
 
   const vendor = await db.vendor.create({
     data: {
-      weddingId:   wedding.id,
-      category:    data.category,
-      name:        data.name,
-      contactName: data.contactName ?? null,
-      email:       data.email || null,
-      phone:       data.phone ?? null,
-      website:     data.website ?? null,
-      notes:       data.notes ?? null,
+      weddingId:       wedding.id,
+      category:        data.category,
+      name:            data.name,
+      contactName:     data.contactName ?? null,
+      email:           data.email || null,
+      phone:           data.phone ?? null,
+      website:         data.website ?? null,
+      notes:           data.notes ?? null,
+      lastContactedAt: data.lastContactedAt ? new Date(data.lastContactedAt) : null,
+      followUpDate:    data.followUpDate ? new Date(data.followUpDate) : null,
     },
   });
 
@@ -97,17 +116,22 @@ export async function updateVendorAction(id: string, formData: unknown) {
   const vendor = await db.vendor.update({
     where: { id },
     data: {
-      category:    data.category,
-      name:        data.name,
-      contactName: data.contactName ?? null,
-      email:       data.email || null,
-      phone:       data.phone ?? null,
-      website:     data.website ?? null,
-      notes:       data.notes ?? null,
+      category:        data.category,
+      name:            data.name,
+      contactName:     data.contactName ?? null,
+      email:           data.email || null,
+      phone:           data.phone ?? null,
+      website:         data.website ?? null,
+      notes:           data.notes ?? null,
+      lastContactedAt: data.lastContactedAt ? new Date(data.lastContactedAt) : null,
+      followUpDate:    data.followUpDate ? new Date(data.followUpDate) : null,
     },
     include: {
-      packages:  { orderBy: { createdAt: "asc" } },
-      documents: { orderBy: { createdAt: "asc" } },
+      packages:    { orderBy: { createdAt: "asc" } },
+      documents:   { orderBy: { createdAt: "asc" } },
+      payments:    { orderBy: { dueDate: "asc" } },
+      meetings:    { orderBy: { date: "desc" } },
+      budgetItems: true,
     },
   });
 
@@ -272,4 +296,103 @@ export async function deleteVendorDocumentAction(id: string) {
   await db.vendorDocument.delete({ where: { id } });
   revalidatePath(REVALIDATE_PATH);
   revalidateTag(`wedding-stats-${session.user.id}`);
+}
+
+// ── Vendor Payments ────────────────────────────────────────────────────────
+
+export async function addVendorPaymentAction(vendorId: string, formData: unknown) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const parsed = paymentSchema.safeParse(formData);
+  if (!parsed.success) throw new Error("Invalid payment data.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+  const vendor = await db.vendor.findFirst({ where: { id: vendorId, weddingId: wedding.id } });
+  if (!vendor) throw new Error("Vendor not found.");
+
+  const data = parsed.data;
+  const payment = await db.vendorPayment.create({
+    data: {
+      vendorId,
+      label:   data.label,
+      amount:  data.amount,
+      dueDate: new Date(data.dueDate),
+      notes:   data.notes ?? null,
+    },
+  });
+
+  revalidatePath(REVALIDATE_PATH);
+  return payment;
+}
+
+export async function markVendorPaymentPaidAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+  const existing = await db.vendorPayment.findFirst({
+    where:   { id },
+    include: { vendor: true },
+  });
+  if (!existing || existing.vendor.weddingId !== wedding.id) throw new Error("Payment not found.");
+
+  await db.vendorPayment.update({ where: { id }, data: { paidAt: new Date() } });
+  revalidatePath(REVALIDATE_PATH);
+}
+
+export async function deleteVendorPaymentAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+  const existing = await db.vendorPayment.findFirst({
+    where:   { id },
+    include: { vendor: true },
+  });
+  if (!existing || existing.vendor.weddingId !== wedding.id) throw new Error("Payment not found.");
+
+  await db.vendorPayment.delete({ where: { id } });
+  revalidatePath(REVALIDATE_PATH);
+}
+
+// ── Vendor Meetings ────────────────────────────────────────────────────────
+
+export async function addVendorMeetingAction(vendorId: string, formData: unknown) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const parsed = meetingSchema.safeParse(formData);
+  if (!parsed.success) throw new Error("Invalid meeting data.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+  const vendor = await db.vendor.findFirst({ where: { id: vendorId, weddingId: wedding.id } });
+  if (!vendor) throw new Error("Vendor not found.");
+
+  const data = parsed.data;
+  const meeting = await db.vendorMeeting.create({
+    data: {
+      vendorId,
+      date:  new Date(data.date),
+      notes: data.notes,
+    },
+  });
+
+  revalidatePath(REVALIDATE_PATH);
+  return meeting;
+}
+
+export async function deleteVendorMeetingAction(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized.");
+
+  const wedding = await getWeddingForUser(session.user.id);
+  const existing = await db.vendorMeeting.findFirst({
+    where:   { id },
+    include: { vendor: true },
+  });
+  if (!existing || existing.vendor.weddingId !== wedding.id) throw new Error("Meeting not found.");
+
+  await db.vendorMeeting.delete({ where: { id } });
+  revalidatePath(REVALIDATE_PATH);
 }
