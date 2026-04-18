@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
@@ -6,7 +6,7 @@ import ResponsesClient, { type RespondedGroup, type NotRespondedGroup } from "@/
 import { formatRelativeTime } from "@/lib/utils";
 
 export default async function ResponsesPage() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) redirect("/login");
 
   const wedding = await db.wedding.findFirst({

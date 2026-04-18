@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const REVALIDATE_PATH = "/dashboard/vendors";
@@ -77,6 +77,7 @@ export async function addVendorAction(formData: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
   return vendor;
 }
 
@@ -111,6 +112,7 @@ export async function updateVendorAction(id: string, formData: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
   return vendor;
 }
 
@@ -125,6 +127,7 @@ export async function deleteVendorAction(id: string) {
 
   await db.vendor.delete({ where: { id } });
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function updateVendorStatusAction(id: string, status: string) {
@@ -141,6 +144,7 @@ export async function updateVendorStatusAction(id: string, status: string) {
 
   await db.vendor.update({ where: { id }, data: { status: parsedStatus.data } });
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 // ── Packages ───────────────────────────────────────────────────────────────
@@ -169,6 +173,7 @@ export async function addPackageAction(vendorId: string, formData: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
   return pkg;
 }
 
@@ -200,6 +205,7 @@ export async function updatePackageAction(id: string, formData: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function deletePackageAction(id: string) {
@@ -216,6 +222,7 @@ export async function deletePackageAction(id: string) {
 
   await db.vendorPackage.delete({ where: { id } });
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 // ── Vendor Documents ───────────────────────────────────────────────────────
@@ -246,6 +253,7 @@ export async function addVendorDocumentAction(
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
   return doc;
 }
 
@@ -263,4 +271,5 @@ export async function deleteVendorDocumentAction(id: string) {
 
   await db.vendorDocument.delete({ where: { id } });
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }

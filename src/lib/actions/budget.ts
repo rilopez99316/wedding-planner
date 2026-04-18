@@ -2,14 +2,15 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const REVALIDATE_PATH = "/dashboard/budget";
 
-function revalidateBudget() {
+function revalidateBudget(userId?: string) {
   revalidatePath(REVALIDATE_PATH);
   revalidatePath("/dashboard");
+  if (userId) revalidateTag(`wedding-stats-${userId}`);
 }
 
 async function getWeddingForUser(userId: string) {
@@ -57,7 +58,7 @@ export async function updateTotalBudgetAction(amount: number) {
     data: { totalBudget: parsed.data.amount },
   });
 
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 // ── Default categories (seeded on first visit) ─────────────────────────────
@@ -75,19 +76,10 @@ const DEFAULT_CATEGORIES = [
   { name: "Miscellaneous",         color: "#6b7280", order: 9 },
 ];
 
-export async function initBudgetCategoriesAction() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized.");
-
-  const wedding = await getWeddingForUser(session.user.id);
-
-  const count = await db.budgetCategory.count({ where: { weddingId: wedding.id } });
-  if (count > 0) return;
-
+export async function initBudgetCategoriesAction(weddingId: string) {
   await db.budgetCategory.createMany({
-    data: DEFAULT_CATEGORIES.map((d) => ({ ...d, weddingId: wedding.id })),
+    data: DEFAULT_CATEGORIES.map((d) => ({ ...d, weddingId })),
   });
-
   revalidateBudget();
 }
 
@@ -117,7 +109,7 @@ export async function addBudgetCategoryAction(formData: unknown) {
     },
   });
 
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 export async function updateBudgetCategoryAction(id: string, formData: unknown) {
@@ -139,7 +131,7 @@ export async function updateBudgetCategoryAction(id: string, formData: unknown) 
     data: { name: parsed.data.name, color: parsed.data.color },
   });
 
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 export async function deleteBudgetCategoryAction(id: string) {
@@ -156,7 +148,7 @@ export async function deleteBudgetCategoryAction(id: string) {
   if (existing._count.items > 0) throw new Error("Remove all items before deleting this category.");
 
   await db.budgetCategory.delete({ where: { id } });
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 // ── Budget items ────────────────────────────────────────────────────────────
@@ -191,7 +183,7 @@ export async function addBudgetItemAction(formData: unknown) {
     },
   });
 
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 export async function updateBudgetItemAction(id: string, formData: unknown) {
@@ -229,7 +221,7 @@ export async function updateBudgetItemAction(id: string, formData: unknown) {
     },
   });
 
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
 
 export async function deleteBudgetItemAction(id: string) {
@@ -244,5 +236,5 @@ export async function deleteBudgetItemAction(id: string) {
   if (!existing) throw new Error("Item not found.");
 
   await db.budgetItem.delete({ where: { id } });
-  revalidateBudget();
+  revalidateBudget(session.user.id);
 }
