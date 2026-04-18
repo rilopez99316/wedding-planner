@@ -58,7 +58,7 @@ export async function addVendorAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = vendorSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
+  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
 
   const wedding = await getWeddingForUser(session.user.id);
   const data = parsed.data;
@@ -150,7 +150,7 @@ export async function addPackageAction(vendorId: string, formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = packageSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
+  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
 
   const wedding = await getWeddingForUser(session.user.id);
   const vendor = await db.vendor.findFirst({ where: { id: vendorId, weddingId: wedding.id } });

@@ -8,7 +8,6 @@ import Button from "@/components/ui/Button";
 import {
   saveDraftAction,
   sendMessageAction,
-  scheduleMessageAction,
   deleteMessageAction,
   resendMessageAction,
   type MessageInput,
@@ -18,7 +17,6 @@ import {
 
 type Channel = "email" | "sms";
 type RecipientFilter = "all" | "attending" | "not_responded" | "declined";
-type SendMode = "now" | "scheduled";
 
 interface SerializedMessage {
   id: string;
@@ -40,7 +38,6 @@ interface SerializedMessage {
 interface Stats {
   totalSent: number;
   guestsReached: number;
-  scheduledCount: number;
 }
 
 interface GuestCounts {
@@ -59,8 +56,6 @@ interface FormState {
   recipientFilter: RecipientFilter;
   subject: string;
   body: string;
-  sendMode: SendMode;
-  scheduledAt: string;
 }
 
 const emptyForm = (): FormState => ({
@@ -68,8 +63,6 @@ const emptyForm = (): FormState => ({
   recipientFilter: "all",
   subject: "",
   body: "",
-  sendMode: "now",
-  scheduledAt: "",
 });
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -327,8 +320,7 @@ export default function CommunicationsClient({
   }
 
   async function handleSend() {
-    const { channel, subject, body, sendMode, scheduledAt, recipientFilter } =
-      composeForm;
+    const { channel, subject, body, recipientFilter } = composeForm;
 
     if (!body.trim()) {
       setComposeError("Message body is required.");
@@ -338,10 +330,6 @@ export default function CommunicationsClient({
       setComposeError("Subject line is required for email messages.");
       return;
     }
-    if (sendMode === "scheduled" && !scheduledAt) {
-      setComposeError("Please pick a date and time to schedule the message.");
-      return;
-    }
 
     setComposeSending(true);
     setComposeError(null);
@@ -349,11 +337,7 @@ export default function CommunicationsClient({
     const input: MessageInput = { channel, subject, body, recipientFilter };
 
     try {
-      if (sendMode === "scheduled") {
-        await scheduleMessageAction({ ...input, scheduledAt });
-      } else {
-        await sendMessageAction(input);
-      }
+      await sendMessageAction(input);
       setComposing(false);
       setComposeForm(emptyForm());
       setComposeSuccess(true);
@@ -421,15 +405,11 @@ export default function CommunicationsClient({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const minScheduledAt = new Date(Date.now() + 5 * 60 * 1000)
-    .toISOString()
-    .slice(0, 16);
-
   return (
     <div className="max-w-3xl space-y-6">
 
       {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-apple-sm px-4 py-3.5">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
             Messages Sent
@@ -451,15 +431,6 @@ export default function CommunicationsClient({
               of {guestCounts.total} total guests
             </p>
           )}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-apple-sm px-4 py-3.5">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
-            Scheduled
-          </p>
-          <p className="text-2xl font-semibold text-gray-900">
-            {stats.scheduledCount || "—"}
-          </p>
         </div>
       </div>
 
@@ -693,60 +664,6 @@ export default function CommunicationsClient({
                 />
               </div>
 
-              {/* Send mode toggle */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl w-fit">
-                  {(["now", "scheduled"] as SendMode[]).map((mode) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      onClick={() =>
-                        setComposeForm((f) => ({ ...f, sendMode: mode }))
-                      }
-                      className={cn(
-                        "px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150",
-                        composeForm.sendMode === mode
-                          ? "bg-white text-gray-900 shadow-apple-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      )}
-                    >
-                      {mode === "now" ? "Send Now" : "Schedule"}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Datetime picker */}
-                <AnimatePresence>
-                  {composeForm.sendMode === "scheduled" && (
-                    <motion.div
-                      key="scheduler"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.15 }}
-                      className="overflow-hidden"
-                    >
-                      <label className={label}>
-                        Deliver at{" "}
-                        <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={composeForm.scheduledAt}
-                        min={minScheduledAt}
-                        onChange={(e) =>
-                          setComposeForm((f) => ({
-                            ...f,
-                            scheduledAt: e.target.value,
-                          }))
-                        }
-                        className="text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent bg-white transition-colors"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
               {/* Action buttons */}
               <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
                 <Button
@@ -755,9 +672,7 @@ export default function CommunicationsClient({
                   loading={composeSending}
                   onClick={handleSend}
                 >
-                  {composeForm.sendMode === "now"
-                    ? "Send Message"
-                    : "Schedule Message"}
+                  Send Message
                 </Button>
                 <Button
                   variant="ghost"

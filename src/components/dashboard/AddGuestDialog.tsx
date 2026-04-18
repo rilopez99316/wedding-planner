@@ -10,6 +10,7 @@ import { addGuestGroupAction } from "@/lib/actions/guests";
 import type { WeddingEvent } from "@prisma/client";
 
 interface GuestRow {
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -30,11 +31,11 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
   const [groupName, setGroupName] = useState("");
   const [tier, setTier] = useState<"A" | "B">("A");
   const [hasPlusOne, setHasPlusOne] = useState(false);
-  const [guests, setGuests] = useState<GuestRow[]>([{ firstName: "", lastName: "", email: "", phone: "" }]);
+  const [guests, setGuests] = useState<GuestRow[]>([{ id: crypto.randomUUID(), firstName: "", lastName: "", email: "", phone: "" }]);
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>(events.map((e) => e.id));
 
   function addGuestRow() {
-    setGuests((prev) => [...prev, { firstName: "", lastName: "", email: "", phone: "" }]);
+    setGuests((prev) => [...prev, { id: crypto.randomUUID(), firstName: "", lastName: "", email: "", phone: "" }]);
   }
 
   function updateGuest(index: number, field: keyof GuestRow, value: string) {
@@ -56,7 +57,7 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
     setGroupName("");
     setTier("A");
     setHasPlusOne(false);
-    setGuests([{ firstName: "", lastName: "", email: "", phone: "" }]);
+    setGuests([{ id: crypto.randomUUID(), firstName: "", lastName: "", email: "", phone: "" }]);
     setSelectedEventIds(events.map((e) => e.id));
     setError("");
   }
@@ -180,7 +181,7 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
                     <div className="space-y-3">
                       <label className="text-xs font-medium text-gray-600">Guests in this group</label>
                       {guests.map((guest, i) => (
-                        <div key={i} className="flex gap-2 items-start">
+                        <div key={guest.id} className="flex gap-2 items-start">
                           <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
                               placeholder="First name"
