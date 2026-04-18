@@ -2,13 +2,16 @@
 
 import { cn } from "@/lib/utils";
 import { updateVendorStatusAction } from "@/lib/actions/vendors";
-import type { Vendor, VendorPackage, VendorDocument } from "@prisma/client";
+import type { Vendor, VendorPackage, VendorDocument, VendorPayment, VendorMeeting, BudgetItem } from "@prisma/client";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type VendorWithPackages = Vendor & {
-  packages:  VendorPackage[];
-  documents: VendorDocument[];
+  packages:    VendorPackage[];
+  documents:   VendorDocument[];
+  payments:    VendorPayment[];
+  meetings:    VendorMeeting[];
+  budgetItems: BudgetItem[];
 };
 
 type Status = "prospect" | "shortlisted" | "booked" | "rejected";
@@ -63,6 +66,21 @@ export default function VendorCard({
   onStatusChange,
 }: VendorCardProps) {
   const status = vendor.status as Status;
+
+  const needsFollowUp =
+    vendor.followUpDate != null &&
+    new Date(vendor.followUpDate) < new Date() &&
+    (status === "prospect" || status === "shortlisted");
+
+  const nextPayment = (vendor.payments ?? [])
+    .filter((p) => !p.paidAt)
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0] ?? null;
+
+  const nextPaymentOverdue = nextPayment && new Date(nextPayment.dueDate) < new Date();
+  const nextPaymentSoon =
+    nextPayment &&
+    !nextPaymentOverdue &&
+    new Date(nextPayment.dueDate).getTime() - Date.now() < 14 * 24 * 60 * 60 * 1000;
 
   async function cycleStatus() {
     const nextIndex = (STATUS_CYCLE.indexOf(status) + 1) % STATUS_CYCLE.length;
@@ -122,6 +140,29 @@ export default function VendorCard({
           </div>
           <span className="text-[13px] font-semibold text-gray-700">{priceRange(vendor.packages)}</span>
         </div>
+
+        {/* Follow-up warning */}
+        {needsFollowUp && (
+          <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[11px] font-medium rounded-md px-2.5 py-1.5">
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            Follow-up overdue
+          </div>
+        )}
+
+        {/* Next payment badge */}
+        {nextPayment && (
+          <div className={cn(
+            "flex items-center gap-1.5 text-[11px] font-medium rounded-md px-2.5 py-1.5",
+            nextPaymentOverdue ? "bg-red-50 text-red-600" : nextPaymentSoon ? "bg-amber-50 text-amber-700" : "bg-gray-50 text-gray-500"
+          )}>
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {nextPayment.label}: ${nextPayment.amount.toLocaleString()} due {new Date(nextPayment.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+          </div>
+        )}
 
         {/* Notes snippet */}
         {vendor.notes && (

@@ -11,25 +11,32 @@ import { deleteVendorAction } from "@/lib/actions/vendors";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type Category = "all" | "venue" | "photographer" | "caterer" | "florist" | "dj" | "other";
+type Category = "all" | "needsFollowUp" | "venue" | "photographer" | "caterer" | "florist" | "dj" | "officiant" | "hairMakeup" | "transportation" | "cake" | "stationery" | "other";
 
 const CATEGORIES: { value: Category; label: string }[] = [
-  { value: "all",          label: "All" },
-  { value: "venue",        label: "Venue" },
-  { value: "photographer", label: "Photographer" },
-  { value: "caterer",      label: "Caterer" },
-  { value: "florist",      label: "Florist" },
-  { value: "dj",           label: "DJ" },
-  { value: "other",        label: "Other" },
+  { value: "all",            label: "All" },
+  { value: "needsFollowUp",  label: "Needs Follow-up" },
+  { value: "venue",          label: "Venue" },
+  { value: "photographer",   label: "Photographer" },
+  { value: "caterer",        label: "Caterer" },
+  { value: "florist",        label: "Florist" },
+  { value: "dj",             label: "DJ" },
+  { value: "officiant",      label: "Officiant" },
+  { value: "hairMakeup",     label: "Hair & Makeup" },
+  { value: "transportation", label: "Transportation" },
+  { value: "cake",           label: "Cake" },
+  { value: "stationery",     label: "Stationery" },
+  { value: "other",          label: "Other" },
 ];
 
 interface VendorsClientProps {
   initialVendors: VendorWithPackages[];
+  totalBudget:    number | null;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export default function VendorsClient({ initialVendors }: VendorsClientProps) {
+export default function VendorsClient({ initialVendors, totalBudget }: VendorsClientProps) {
   const [vendors,         setVendors]         = useState<VendorWithPackages[]>(initialVendors);
   const [activeCategory,  setActiveCategory]  = useState<Category>("all");
   const [compareIds,      setCompareIds]      = useState<string[]>([]);
@@ -38,9 +45,16 @@ export default function VendorsClient({ initialVendors }: VendorsClientProps) {
   const [compareOpen,     setCompareOpen]     = useState(false);
 
   // Filtered vendors
+  const now = new Date();
   const filtered = activeCategory === "all"
     ? vendors
-    : vendors.filter((v) => v.category === activeCategory);
+    : activeCategory === "needsFollowUp"
+      ? vendors.filter((v) =>
+          v.followUpDate != null &&
+          new Date(v.followUpDate) < now &&
+          (v.status === "prospect" || v.status === "shortlisted")
+        )
+      : vendors.filter((v) => v.category === activeCategory);
 
   // Vendors in compare
   const compareVendors = vendors.filter((v) => compareIds.includes(v.id));
@@ -115,17 +129,66 @@ export default function VendorsClient({ initialVendors }: VendorsClientProps) {
     return false;
   }
 
+  // ── Budget summary ────────────────────────────────────────────────────────
+
+  const bookedVendors = vendors.filter((v) => v.status === "booked");
+  const bookedCost = bookedVendors.reduce((sum, v) => {
+    const linkedCost = (v.budgetItems ?? []).reduce((s, b) => s + (b.estimatedCost ?? 0), 0);
+    if (linkedCost > 0) return sum + linkedCost;
+    const pkgPrices = v.packages.map((p) => p.price).filter((p): p is number => p != null);
+    const minPkg = pkgPrices.length > 0 ? Math.min(...pkgPrices) : 0;
+    return sum + minPkg;
+  }, 0);
+  const budgetPct = totalBudget && totalBudget > 0 ? Math.min((bookedCost / totalBudget) * 100, 100) : 0;
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-6 pb-24">
+      {/* Budget summary bar */}
+      {totalBudget != null && totalBudget > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-5 py-4 flex items-center gap-5">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between mb-1.5">
+              <span className="text-[13px] font-medium text-gray-700">
+                Booked: <span className="text-gray-900 font-semibold">${bookedCost.toLocaleString()}</span>
+              </span>
+              <span className="text-[12px] text-gray-400">
+                of ${totalBudget.toLocaleString()} budget
+              </span>
+            </div>
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  budgetPct >= 90 ? "bg-red-400" : budgetPct >= 70 ? "bg-amber-400" : "bg-green-400"
+                )}
+                style={{ width: `${budgetPct}%` }}
+              />
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-[13px] font-semibold text-gray-900">
+              ${(totalBudget - bookedCost).toLocaleString()}
+            </p>
+            <p className="text-[11px] text-gray-400">remaining</p>
+          </div>
+        </div>
+      )}
+
       {/* Category filter tabs + action */}
       <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-1 overflow-x-auto pb-1 flex-1">
         {CATEGORIES.map((cat) => {
           const count = cat.value === "all"
             ? vendors.length
-            : vendors.filter((v) => v.category === cat.value).length;
+            : cat.value === "needsFollowUp"
+              ? vendors.filter((v) =>
+                  v.followUpDate != null &&
+                  new Date(v.followUpDate) < now &&
+                  (v.status === "prospect" || v.status === "shortlisted")
+                ).length
+              : vendors.filter((v) => v.category === cat.value).length;
           return (
             <button
               key={cat.value}
@@ -192,8 +255,8 @@ export default function VendorsClient({ initialVendors }: VendorsClientProps) {
         </div>
       )}
 
-      {/* Compare hint when on All tab */}
-      {activeCategory === "all" && vendors.length > 0 && (
+      {/* Compare hint when on All or needsFollowUp tab */}
+      {(activeCategory === "all" || activeCategory === "needsFollowUp") && vendors.length > 0 && (
         <p className="text-xs text-gray-400 text-center">
           Select a category tab to enable side-by-side comparison within that category.
         </p>

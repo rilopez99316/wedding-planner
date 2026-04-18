@@ -11,12 +11,17 @@ import type { VendorPackage } from "@prisma/client";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 const CATEGORY_LABEL: Record<string, string> = {
-  venue:        "Venue",
-  photographer: "Photographer",
-  caterer:      "Caterer",
-  florist:      "Florist",
-  dj:           "DJ",
-  other:        "Other",
+  venue:          "Venue",
+  photographer:   "Photographer",
+  caterer:        "Caterer",
+  florist:        "Florist",
+  dj:             "DJ",
+  officiant:      "Officiant",
+  hairMakeup:     "Hair & Makeup",
+  transportation: "Transportation",
+  cake:           "Cake",
+  stationery:     "Stationery",
+  other:          "Other",
 };
 
 interface VendorComparisonTableProps {
