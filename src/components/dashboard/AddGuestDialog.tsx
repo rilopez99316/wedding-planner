@@ -122,9 +122,9 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed inset-0 flex items-center justify-center z-50 p-4"
               >
-                <div className="bg-white rounded-xl shadow-apple-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <Dialog.Title className="text-[15px] font-semibold text-gray-900">Add guest group</Dialog.Title>
+                <div className="bg-[#FDFCFB] rounded-xl shadow-apple-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid rgba(201,168,76,0.2)" }}>
+                    <Dialog.Title className="font-serif font-light text-xl text-gray-900">Add guest group</Dialog.Title>
                     <Dialog.Close className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

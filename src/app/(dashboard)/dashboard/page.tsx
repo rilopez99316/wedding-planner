@@ -217,7 +217,7 @@ export default async function DashboardPage() {
       iconPath: ICON_GUESTS,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
-      borderColor: "border-l-blue-400",
+      borderColor: "border-t-blue-400",
     },
     {
       label: "RSVP rate",
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
       iconPath: ICON_CHECK,
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
-      borderColor: "border-l-green-400",
+      borderColor: "border-t-green-400",
     },
     {
       label: stats.totalBudget > 0 ? "Budget paid" : "Budget",
@@ -237,7 +237,7 @@ export default async function DashboardPage() {
       iconPath: ICON_BUDGET,
       iconBg: "bg-amber-50",
       iconColor: "text-amber-600",
-      borderColor: "border-l-amber-400",
+      borderColor: "border-t-amber-400",
     },
     {
       label: stats.daysUntilWedding > 0 ? "Days to go" : "Wedding day",
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
       iconPath: ICON_CLOCK,
       iconBg: "bg-accent-light",
       iconColor: "text-accent",
-      borderColor: "border-l-accent",
+      borderColor: "border-t-accent",
     },
   ];
 
@@ -330,7 +330,10 @@ export default async function DashboardPage() {
 
         {/* "Your planning journey" — 10-card section health grid */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Your planning journey</h2>
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="font-serif font-light text-xl text-gray-900 whitespace-nowrap">Your planning journey</h2>
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, rgba(201,168,76,0.35), transparent)" }} />
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {journeyCards.map((card) => (
               <JourneyCard key={card.href} {...card} />
@@ -358,8 +361,11 @@ export default async function DashboardPage() {
 
         {/* Quick actions — 6-up grid */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Quick actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="font-serif font-light text-xl text-gray-900 whitespace-nowrap">Quick actions</h2>
+            <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, rgba(201,168,76,0.35), transparent)" }} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {quickActions.map((action) => (
               <QuickActionLink key={action.href} {...action} />
             ))}
@@ -367,15 +373,25 @@ export default async function DashboardPage() {
         </div>
 
         {/* Public wedding page link */}
-        <div className="bg-accent-light rounded-xl p-5 flex items-center justify-between">
+        <div
+          className="rounded-xl p-5 flex items-center justify-between border"
+          style={{ background: "linear-gradient(135deg, #FAF7F0 0%, #F5EDD8 100%)", borderColor: "rgba(201,168,76,0.3)" }}
+        >
           <div>
-            <p className="text-sm font-semibold text-accent">Your public wedding page</p>
-            <p className="text-xs text-accent/70 mt-0.5">Share this link with your guests</p>
+            <span
+              className="text-[8px] tracking-[0.35em] uppercase font-sans block mb-1"
+              style={{ color: "rgba(201,168,76,0.9)" }}
+            >
+              ◆ Share with guests
+            </span>
+            <p className="font-serif font-light text-lg text-gray-900 leading-tight">Your public wedding page</p>
+            <p className="text-xs text-gray-400 mt-0.5">Let your guests RSVP and find details</p>
           </div>
           <Link
             href={`/${wedding.slug}`}
             target="_blank"
-            className="inline-flex items-center gap-1.5 bg-accent text-white text-xs font-medium px-3 py-1.5 rounded-md hover:brightness-105 transition-all"
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-lg transition-all hover:brightness-95 shrink-0 ml-4"
+            style={{ background: "rgba(201,168,76,0.15)", color: "#8B6914", border: "1px solid rgba(201,168,76,0.4)" }}
           >
             vows.app/{wedding.slug}
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

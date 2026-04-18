@@ -69,6 +69,19 @@ export function HeroBanner({
         </div>
       )}
 
+      {/* SVG grain / noise overlay — adds film-grain depth */}
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none select-none"
+        style={{ opacity: 0.035 }}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <filter id="grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grain)" />
+      </svg>
+
       {/* Directional vignette — lets the photo breathe in the center */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/30 to-black/65" />
 
@@ -106,14 +119,14 @@ export function HeroBanner({
 
         {/* Countdown — frosted glass card */}
         {isToday ? (
-          <div className="backdrop-blur-md bg-white/15 border border-white/20 rounded-2xl px-10 py-5 shadow-apple-md">
+          <div className="backdrop-blur-md bg-white/15 border border-white/20 rounded-2xl px-10 py-5 shadow-apple-md" style={{ borderColor: "rgba(201,168,76,0.25)" }}>
             <div className="text-4xl font-light font-serif text-white leading-none">Today!</div>
             <div className="text-[9px] tracking-[0.3em] uppercase text-white/50 mt-2.5 font-sans">
               Your wedding day is here
             </div>
           </div>
         ) : (
-          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-12 py-6 shadow-apple-md">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl px-12 py-6 shadow-apple-md" style={{ borderColor: "rgba(201,168,76,0.25)" }}>
             <div
               className="text-7xl font-semibold tabular-nums text-white leading-none"
               style={{ textShadow: "0 2px 16px rgba(0,0,0,0.25)" }}
@@ -150,11 +163,11 @@ export function PrimaryStatCard({
   borderColor: string;
 }) {
   return (
-    <div className={`bg-white rounded-xl shadow-apple-sm border border-gray-100 border-l-4 ${borderColor} p-6 flex flex-col`}>
-      <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-4 ${iconBg} ${iconColor}`}>
+    <div className={`bg-[#FDFCFB] rounded-xl shadow-apple-sm border border-gray-100 border-t-2 ${borderColor} p-7 flex flex-col`}>
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-5 ${iconBg} ${iconColor}`}>
         <Icon path={iconPath} />
       </div>
-      <div className="text-4xl font-semibold text-gray-900 tabular-nums tracking-tight leading-none mb-2">
+      <div className="font-serif text-4xl font-light text-gray-900 tabular-nums tracking-tight leading-none mb-2">
         {value}
       </div>
       <div className="text-sm font-semibold text-gray-700">{label}</div>
@@ -195,25 +208,25 @@ export function JourneyCard({
   return (
     <Link
       href={href}
-      className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm p-4 flex flex-col gap-3 hover:shadow-apple-md hover:border-accent/20 transition-all duration-200"
+      className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm p-4 flex flex-col gap-3 hover:shadow-apple-md hover:border-accent/20 hover:bg-[#FDFCFB] transition-all duration-200"
     >
       {/* Icon + arrow */}
-      <div className="flex items-start justify-between">
+      <div className="relative flex items-start">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBg} ${iconColor}`}>
           <Icon path={iconPath} className="w-4 h-4" />
         </div>
-        <span className="text-sm text-gray-300 group-hover:text-accent transition-colors leading-none mt-0.5">
+        <span className="absolute top-0 right-0 text-base text-gray-200 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-200 leading-none">
           →
         </span>
       </div>
 
       {/* Headline stat */}
-      <div className="text-xl font-semibold text-gray-900 leading-tight">{stat}</div>
+      <div className="font-serif text-2xl font-light text-gray-900 leading-tight">{stat}</div>
 
       {/* Label + status badge */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-gray-500 truncate">{label}</span>
-        <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${s.className}`}>
+        <span className={`shrink-0 text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${s.className}`}>
           {s.label}
         </span>
       </div>
@@ -235,25 +248,34 @@ export function GradientProgressBar({
   const milestones = [25, 50, 75, 100];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-3">
+    <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-900">Planning progress</span>
+        <span className="font-serif text-base font-light text-gray-900">Planning progress</span>
         <span className="text-sm font-semibold text-accent">{pct}%</span>
       </div>
 
-      {/* Bar with milestone tick marks */}
-      <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-700"
-          style={{ width: `${pct}%` }}
-        />
+      {/* Milestone dots row — above the bar */}
+      <div className="relative h-2">
         {milestones.map((m) => (
           <div
             key={m}
-            className={`absolute top-0 bottom-0 w-px transition-colors ${pct >= m ? "bg-white/60" : "bg-gray-200"}`}
+            className="absolute top-0 -translate-x-1/2"
             style={{ left: `${m}%` }}
-          />
+          >
+            <div
+              className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${pct >= m ? "bg-accent" : "bg-gray-200"}`}
+              style={pct >= m ? { boxShadow: "0 0 4px rgba(0,113,227,0.4)" } : undefined}
+            />
+          </div>
         ))}
+      </div>
+
+      {/* Bar */}
+      <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-700"
+          style={{ width: `${pct}%`, boxShadow: "inset 0 1px 1px rgba(255,255,255,0.3)" }}
+        />
       </div>
 
       <div className="flex items-center justify-between">
@@ -296,9 +318,9 @@ export function BudgetBar({
   const isOverBudget = estimatedSpend > totalBudget;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-4">
+    <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-900">Budget snapshot</span>
+        <span className="font-serif text-base font-light text-gray-900">Budget snapshot</span>
         <Link href="/dashboard/budget" className="text-xs text-accent hover:underline font-medium">
           Manage →
         </Link>
@@ -312,28 +334,28 @@ export function BudgetBar({
         />
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-accent transition-all duration-700"
-          style={{ width: `${paidPct}%` }}
+          style={{ width: `${paidPct}%`, boxShadow: "inset 0 1px 1px rgba(255,255,255,0.3)" }}
         />
       </div>
 
       {/* Three stat columns */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
-          <div className="text-sm font-semibold text-gray-900">{formatCurrency(amountPaid)}</div>
+          <div className="font-serif text-base font-light text-gray-900">{formatCurrency(amountPaid)}</div>
           <div className="flex items-center justify-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-accent" />
             <span className="text-xs text-gray-400">Paid</span>
           </div>
         </div>
         <div>
-          <div className="text-sm font-semibold text-gray-900">{formatCurrency(estimatedSpend)}</div>
+          <div className="font-serif text-base font-light text-gray-900">{formatCurrency(estimatedSpend)}</div>
           <div className="flex items-center justify-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-accent/30" />
             <span className="text-xs text-gray-400">Estimated</span>
           </div>
         </div>
         <div>
-          <div className={`text-sm font-semibold ${isOverBudget ? "text-red-600" : "text-gray-900"}`}>
+          <div className={`font-serif text-base font-light ${isOverBudget ? "text-red-600" : "text-gray-900"}`}>
             {formatCurrency(totalBudget)}
           </div>
           <div className="flex items-center justify-center gap-1 mt-1">
@@ -344,9 +366,12 @@ export function BudgetBar({
       </div>
 
       {isOverBudget && (
-        <p className="text-xs text-red-600 font-medium text-center">
-          Estimated spend exceeds your budget by {formatCurrency(estimatedSpend - totalBudget)}
-        </p>
+        <div className="flex items-center justify-center gap-1.5 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+          <span className="text-xs text-red-600 font-medium">
+            Estimated spend exceeds budget by{" "}
+            <strong className="font-semibold">{formatCurrency(estimatedSpend - totalBudget)}</strong>
+          </span>
+        </div>
       )}
     </div>
   );
@@ -404,17 +429,25 @@ export function QuickActionLink({
   return (
     <Link
       href={href}
-      className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm p-5 flex flex-col gap-3 hover:shadow-apple-md hover:border-accent/20 transition-all duration-200"
+      className="group relative bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm overflow-hidden flex items-center gap-4 p-4 hover:shadow-apple-md hover:border-accent/20 hover:bg-white transition-all duration-200"
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
+      {/* Left gold gradient strip */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-0.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200"
+        style={{ background: "linear-gradient(to bottom, rgba(201,168,76,0.6), rgba(201,168,76,0.15))" }}
+      />
+      <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${iconBg} ${iconColor}`}>
         <Icon path={iconPath} className="w-5 h-5" />
       </div>
-      <div>
+      <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-gray-900 group-hover:text-accent transition-colors">
           {label}
         </div>
-        <div className="text-xs text-gray-400 mt-0.5">{description}</div>
+        <div className="text-xs text-gray-400 mt-0.5 truncate">{description}</div>
       </div>
+      <span className="shrink-0 text-sm text-gray-200 group-hover:text-accent group-hover:translate-x-0.5 transition-all duration-200">
+        →
+      </span>
     </Link>
   );
 }

@@ -91,9 +91,9 @@ export default function EditGuestDialog({ group, events, children }: EditGuestDi
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed inset-0 flex items-center justify-center z-50 p-4"
               >
-                <div className="bg-white rounded-xl shadow-apple-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <Dialog.Title className="text-[15px] font-semibold text-gray-900">
+                <div className="bg-[#FDFCFB] rounded-xl shadow-apple-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid rgba(201,168,76,0.2)" }}>
+                    <Dialog.Title className="font-serif font-light text-xl text-gray-900">
                       Edit — {group.groupName}
                     </Dialog.Title>
                     <Dialog.Close className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
@@ -115,10 +115,10 @@ export default function EditGuestDialog({ group, events, children }: EditGuestDi
                     {/* Guests (read-only display) */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-gray-600">Guests</label>
-                      <div className="rounded-md border border-gray-200 divide-y divide-gray-100">
+                      <div className="rounded-lg border border-gray-100 divide-y divide-gray-100 bg-white">
                         {group.guests.map((g) => (
-                          <div key={g.id} className="px-3 py-2 flex items-center gap-2 flex-wrap">
-                            <span className="text-sm text-gray-700">{g.firstName} {g.lastName}</span>
+                          <div key={g.id} className="px-3 py-2.5 flex items-center gap-2 flex-wrap">
+                            <span className="font-serif font-light text-[15px] text-gray-800">{g.firstName} {g.lastName}</span>
                             {g.email && <span className="text-xs text-gray-400">· {g.email}</span>}
                             {g.phone && <span className="text-xs text-gray-400">· {g.phone}</span>}
                           </div>
