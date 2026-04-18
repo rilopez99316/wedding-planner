@@ -1,11 +1,11 @@
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import WeddingPartyClient from "@/components/dashboard/WeddingPartyClient";
 
 export default async function WeddingPartyPage() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) redirect("/login");
 
   const wedding = await db.wedding.findFirst({ where: { ownerId: session.user.id } });

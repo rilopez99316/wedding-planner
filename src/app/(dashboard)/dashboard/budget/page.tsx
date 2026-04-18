@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
@@ -6,10 +6,8 @@ import BudgetClient from "@/components/dashboard/BudgetClient";
 import { initBudgetCategoriesAction } from "@/lib/actions/budget";
 
 export default async function BudgetPage() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) redirect("/login");
-
-  await initBudgetCategoriesAction();
 
   const wedding = await db.wedding.findFirst({
     where: { ownerId: session.user.id },
@@ -26,6 +24,11 @@ export default async function BudgetPage() {
   });
 
   if (!wedding) redirect("/dashboard");
+
+  if (wedding.budgetCategories.length === 0) {
+    await initBudgetCategoriesAction(wedding.id);
+    redirect("/dashboard/budget");
+  }
 
   const totalItems = wedding.budgetCategories.reduce(
     (s, c) => s + c.items.length,

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -6,7 +6,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import CeremonyClient from "@/components/dashboard/CeremonyClient";
 
 export default async function CeremonyPage() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) redirect("/login");
 
   const cookieStore = await cookies();

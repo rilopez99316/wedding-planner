@@ -1,6 +1,7 @@
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { formatDate } from "@/lib/utils";
@@ -180,10 +181,17 @@ async function getWeddingStats(userId: string) {
 }
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user?.id) redirect("/login");
 
-  const data = await getWeddingStats(session.user.id);
+  const userId = session.user.id;
+  const getCachedStats = unstable_cache(
+    () => getWeddingStats(userId),
+    ["wedding-stats", userId],
+    { tags: [`wedding-stats-${userId}`], revalidate: 60 },
+  );
+
+  const data = await getCachedStats();
 
   if (!data) {
     return (

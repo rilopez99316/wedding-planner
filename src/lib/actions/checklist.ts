@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const REVALIDATE_PATH = "/dashboard/checklist";
@@ -127,47 +127,14 @@ const addCustomItemSchema = z.object({
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 
-// Titles from previous seed versions that should trigger a re-seed
-const STALE_TITLES = new Set([
-  "Start planning the honeymoon",
-  "Finalize and confirm honeymoon bookings",
-  "Plan and book rehearsal dinner",
-  "Confirm final headcount with caterer and venue",
-  "Confirm all vendor arrival times and logistics",
-  "Book engagement photo session (if not done)",
-  "Research and tour ceremony venues",
-  "Research and tour reception venues",
-  "Purchase wedding jewelry and accessories",
-  "Create vendor contact sheet with arrival times",
-  "Decide on wedding date and time of year",
-]);
 
-export async function initChecklistItemsAction() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized.");
+type ExistingDefault = { title: string; completedAt: Date | null; category: string; dueDate: Date | null };
 
-  const wedding = await getWeddingForUser(session.user.id);
-
-  const existingDefaults = await db.checklistItem.findMany({
-    where:  { weddingId: wedding.id, isCustom: false },
-    select: { id: true, title: true, completedAt: true, category: true, dueDate: true },
-  });
-
-  // Detect wedding-date change: day_of items should have dueDate == weddingDate
-  const dayOfItem = existingDefaults.find((i) => i.category === "day_of");
-  const dateChanged =
-    !!dayOfItem &&
-    dayOfItem.dueDate?.toISOString().split("T")[0] !==
-      wedding.weddingDate.toISOString().split("T")[0];
-
-  // Detect stale seed: no tasks yet, any old task title found, or wedding date changed
-  const isStale =
-    existingDefaults.length === 0 ||
-    existingDefaults.some((i) => STALE_TITLES.has(i.title)) ||
-    dateChanged;
-
-  if (!isStale) return;
-
+export async function initChecklistItemsAction(
+  weddingId: string,
+  weddingDate: Date,
+  existingDefaults: ExistingDefault[],
+) {
   // Build completion map so we preserve any checked-off tasks by title
   const completionMap = new Map<string, Date | null>(
     existingDefaults.map((i) => [i.title, i.completedAt])
@@ -175,10 +142,8 @@ export async function initChecklistItemsAction() {
 
   // Delete all default tasks (custom tasks are preserved)
   await db.checklistItem.deleteMany({
-    where: { weddingId: wedding.id, isCustom: false },
+    where: { weddingId, isCustom: false },
   });
-
-  const weddingDate = wedding.weddingDate;
 
   const dueDateByCategory: Record<string, Date> = {
     "12_plus":   subtractMonths(weddingDate, 13),
@@ -194,7 +159,7 @@ export async function initChecklistItemsAction() {
 
   await db.checklistItem.createMany({
     data: DEFAULT_TASKS.map((t) => ({
-      weddingId:   wedding.id,
+      weddingId,
       title:       t.title,
       category:    t.category,
       order:       t.order,
@@ -224,6 +189,7 @@ export async function toggleChecklistItemAction(id: string) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function addCustomChecklistItemAction(formData: unknown) {
@@ -253,6 +219,7 @@ export async function addCustomChecklistItemAction(formData: unknown) {
   });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function deleteChecklistItemAction(id: string) {
@@ -270,4 +237,5 @@ export async function deleteChecklistItemAction(id: string) {
   await db.checklistItem.delete({ where: { id } });
 
   revalidatePath(REVALIDATE_PATH);
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }

@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 async function getWeddingForUser(userId: string) {
@@ -62,6 +62,7 @@ export async function addGuestGroupAction(formData: unknown) {
   });
 
   revalidatePath("/dashboard/guests");
+  revalidateTag(`wedding-stats-${session.user.id}`);
   return group;
 }
 
@@ -105,6 +106,7 @@ export async function updateGuestGroupAction(groupId: string, formData: unknown)
   });
 
   revalidatePath("/dashboard/guests");
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function deleteGuestGroupAction(groupId: string) {
@@ -120,6 +122,7 @@ export async function deleteGuestGroupAction(groupId: string) {
 
   await db.guestGroup.delete({ where: { id: groupId } });
   revalidatePath("/dashboard/guests");
+  revalidateTag(`wedding-stats-${session.user.id}`);
 }
 
 export async function searchGuestsAction(query: string, weddingId: string) {
