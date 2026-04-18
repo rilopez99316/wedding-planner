@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
-import VendorCard, { type VendorWithPackages } from "@/components/dashboard/VendorCard";
+import VendorCard, { type VendorWithPackages, CATEGORY_COLOR } from "@/components/dashboard/VendorCard";
 import AddVendorDialog from "@/components/dashboard/AddVendorDialog";
 import VendorComparisonTable from "@/components/dashboard/VendorComparisonTable";
 import { deleteVendorAction } from "@/lib/actions/vendors";
@@ -68,7 +68,7 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
 
   function handleCategoryChange(cat: Category) {
     setActiveCategory(cat);
-    setCompareIds([]); // clear compare when switching tabs
+    setCompareIds([]);
   }
 
   function handleCompareChange(id: string, checked: boolean) {
@@ -117,11 +117,9 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
     setCompareIds([]);
   }
 
-  // Max 4 in compare, and only same-category vendors
   function isCompareDisabled(vendor: VendorWithPackages): boolean {
     if (compareIds.includes(vendor.id)) return false;
     if (compareIds.length >= 4) return true;
-    // If there are already some in compare, restrict to same category
     if (compareIds.length > 0) {
       const existingCategory = vendors.find((v) => v.id === compareIds[0])?.category;
       return vendor.category !== existingCategory;
@@ -145,76 +143,104 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
 
   return (
     <div className="flex flex-col gap-6 pb-24">
+
       {/* Budget summary bar */}
       {totalBudget != null && totalBudget > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-5 py-4 flex items-center gap-5">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline justify-between mb-1.5">
-              <span className="text-[13px] font-medium text-gray-700">
-                Booked: <span className="text-gray-900 font-semibold">${bookedCost.toLocaleString()}</span>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-6 py-5">
+          <div className="flex items-start justify-between gap-6 mb-4">
+            <div className="flex items-baseline gap-2">
+              <svg
+                className="w-4 h-4 self-center shrink-0"
+                style={{ color: "#C9A84C" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+              </svg>
+              <span className="font-serif text-3xl font-semibold text-gray-900 leading-none">
+                {Math.round(budgetPct)}%
               </span>
-              <span className="text-[12px] text-gray-400">
-                of ${totalBudget.toLocaleString()} budget
+              <span className="text-[13px] text-gray-500 leading-none self-end pb-0.5">
+                of budget committed
               </span>
             </div>
-            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500",
-                  budgetPct >= 90 ? "bg-red-400" : budgetPct >= 70 ? "bg-amber-400" : "bg-green-400"
-                )}
-                style={{ width: `${budgetPct}%` }}
-              />
+            <div className="text-right shrink-0">
+              <p className="font-serif text-xl font-semibold text-gray-900 leading-none">
+                ${(totalBudget - bookedCost).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-gray-400 mt-0.5 tracking-wide uppercase">remaining</p>
             </div>
           </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[13px] font-semibold text-gray-900">
-              ${(totalBudget - bookedCost).toLocaleString()}
-            </p>
-            <p className="text-[11px] text-gray-400">remaining</p>
+          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${budgetPct}%`,
+                background: budgetPct >= 90
+                  ? "linear-gradient(90deg, #f97316, #ef4444)"
+                  : budgetPct >= 70
+                    ? "linear-gradient(90deg, #f59e0b, #f97316)"
+                    : "linear-gradient(90deg, #C9A84C, #10b981)",
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[11px] text-gray-400">${bookedCost.toLocaleString()} booked</span>
+            <span className="text-[11px] text-gray-400">${totalBudget.toLocaleString()} total</span>
           </div>
         </div>
       )}
 
+      {/* Section heading */}
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-serif text-2xl text-gray-900">Vendors</h2>
+        <span className="text-[12px] text-gray-400 tabular-nums">{vendors.length} total</span>
+      </div>
+
       {/* Category filter tabs + action */}
       <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-1 overflow-x-auto pb-1 flex-1">
-        {CATEGORIES.map((cat) => {
-          const count = cat.value === "all"
-            ? vendors.length
-            : cat.value === "needsFollowUp"
-              ? vendors.filter((v) =>
-                  v.followUpDate != null &&
-                  new Date(v.followUpDate) < now &&
-                  (v.status === "prospect" || v.status === "shortlisted")
-                ).length
-              : vendors.filter((v) => v.category === cat.value).length;
-          return (
-            <button
-              key={cat.value}
-              onClick={() => handleCategoryChange(cat.value)}
-              className={cn(
-                "shrink-0 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150 flex items-center gap-1.5",
-                activeCategory === cat.value
-                  ? "bg-accent-light text-accent"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-              )}
-            >
-              {cat.label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    "text-[11px] rounded-full px-1.5 py-0.5 leading-none",
-                    activeCategory === cat.value ? "bg-accent/10 text-accent" : "bg-white text-gray-500"
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 flex-1">
+          {CATEGORIES.map((cat) => {
+            const count = cat.value === "all"
+              ? vendors.length
+              : cat.value === "needsFollowUp"
+                ? vendors.filter((v) =>
+                    v.followUpDate != null &&
+                    new Date(v.followUpDate) < now &&
+                    (v.status === "prospect" || v.status === "shortlisted")
+                  ).length
+                : vendors.filter((v) => v.category === cat.value).length;
+            const isActive = activeCategory === cat.value;
+            return (
+              <button
+                key={cat.value}
+                onClick={() => handleCategoryChange(cat.value)}
+                className={cn(
+                  "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-150 whitespace-nowrap",
+                  isActive
+                    ? "bg-white shadow-apple-sm border border-gray-200 text-gray-900"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                )}
+              >
+                {cat.value !== "all" && cat.value !== "needsFollowUp" && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: CATEGORY_COLOR[cat.value]?.border ?? "#D1D1D1" }}
+                  />
+                )}
+                {cat.label}
+                {count > 0 && (
+                  <span className={cn(
+                    "text-[10px] rounded-full px-1.5 py-0.5 font-semibold leading-none tabular-nums",
+                    isActive ? "bg-gray-900 text-white" : "text-gray-400"
+                  )}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
         <Button variant="primary" size="sm" onClick={handleAddNew} className="shrink-0">
           Add vendor
         </Button>
@@ -222,16 +248,20 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
 
       {/* Vendor grid */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-            <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="relative w-20 h-20 mb-6">
+            <div className="absolute inset-0 rounded-full border-2 border-gray-100" />
+            <div className="absolute inset-2 rounded-full border border-gray-100" style={{ opacity: 0.5 }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
           </div>
-          <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
-            {activeCategory === "all" ? "No vendors yet" : `No ${CATEGORIES.find(c => c.value === activeCategory)?.label ?? ""} vendors yet`}
+          <h3 className="font-serif text-2xl text-gray-800 mb-2">
+            {activeCategory === "all" ? "No vendors yet" : `No ${CATEGORIES.find(c => c.value === activeCategory)?.label ?? ""} vendors`}
           </h3>
-          <p className="text-sm text-gray-500 max-w-sm mb-6">
+          <p className="text-[13px] text-gray-400 max-w-xs mb-8 leading-relaxed">
             Add vendors to track contacts, packages, and compare options side by side.
           </p>
           <Button variant="primary" size="md" onClick={handleAddNew}>
@@ -240,9 +270,10 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((vendor) => (
+          {filtered.map((vendor, index) => (
             <VendorCard
               key={vendor.id}
+              index={index}
               vendor={vendor}
               compareChecked={compareIds.includes(vendor.id)}
               compareDisabled={isCompareDisabled(vendor)}
@@ -255,7 +286,7 @@ export default function VendorsClient({ initialVendors, totalBudget }: VendorsCl
         </div>
       )}
 
-      {/* Compare hint when on All or needsFollowUp tab */}
+      {/* Compare hint */}
       {(activeCategory === "all" || activeCategory === "needsFollowUp") && vendors.length > 0 && (
         <p className="text-xs text-gray-400 text-center">
           Select a category tab to enable side-by-side comparison within that category.

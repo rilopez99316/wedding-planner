@@ -32,14 +32,62 @@ const CATEGORIES: { value: Category; label: string }[] = [
   { value: "other",          label: "Other" },
 ];
 
+const TAB_CONFIG: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  {
+    key: "info",
+    label: "Info",
+    icon: (
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 16v-4m0-4h.01" />
+      </svg>
+    ),
+  },
+  {
+    key: "packages",
+    label: "Packages",
+    icon: (
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m-8-4V7m8 4v10" />
+      </svg>
+    ),
+  },
+  {
+    key: "documents",
+    label: "Documents",
+    icon: (
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    key: "payments",
+    label: "Payments",
+    icon: (
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
+  },
+  {
+    key: "meetings",
+    label: "Meetings",
+    icon: (
+      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+];
+
 interface PackageRow {
-  id:         string | null; // null = unsaved
+  id:         string | null;
   name:       string;
   price:      string;
   capacity:   string;
   inclusions: string;
   notes:      string;
-  _key:       string; // stable react key
+  _key:       string;
 }
 
 function emptyPackageRow(): PackageRow {
@@ -51,6 +99,33 @@ interface AddVendorDialogProps {
   onOpenChange: (open: boolean) => void;
   editingVendor: VendorWithPackages | null;
   onSuccess:   (vendor: VendorWithPackages) => void;
+}
+
+// ── Empty state for locked tabs ────────────────────────────────────────────
+
+function LockedTabState({ message }: { message: string }) {
+  return (
+    <div className="py-16 flex flex-col items-center gap-3">
+      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+        <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <p className="font-serif text-base text-gray-500">Not available yet</p>
+      <p className="text-xs text-gray-400 text-center max-w-[200px]">{message}</p>
+    </div>
+  );
+}
+
+// ── Section divider ────────────────────────────────────────────────────────
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-gray-400">{label}</span>
+      <div className="flex-1 h-px bg-gray-100" />
+    </div>
+  );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -73,7 +148,6 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
 
   const isEditMode = !!editingVendor;
 
-  // Populate on open
   useEffect(() => {
     if (editingVendor) {
       setCategory(editingVendor.category as Category);
@@ -166,7 +240,6 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
         vendor = { ...created, packages: [], documents: [], payments: [], meetings: [], budgetItems: [] };
       }
 
-      // Sync packages
       const filledRows = packages.filter((p) => p.name.trim());
       for (const row of filledRows) {
         const pkgPayload = {
@@ -177,8 +250,6 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
           notes:      row.notes.trim() || null,
         };
         if (row.id) {
-          // already handled server-side on updateVendorAction for existing
-          // We need to update existing packages separately
           const { updatePackageAction } = await import("@/lib/actions/vendors");
           await updatePackageAction(row.id, pkgPayload);
         } else {
@@ -196,6 +267,12 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
     }
   }
 
+  // Badge counts
+  const docsBadge    = localDocuments.length > 0 ? localDocuments.length : null;
+  const paymentsBadge = isEditMode && editingVendor
+    ? (editingVendor.payments ?? []).filter((p) => !p.paidAt).length || null
+    : null;
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
@@ -208,7 +285,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
+                className="fixed inset-0 bg-black/25 backdrop-blur-sm z-50"
               />
             </Dialog.Overlay>
 
@@ -221,13 +298,24 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed inset-0 flex items-center justify-center z-50 p-4"
               >
-                <div className="bg-white rounded-xl shadow-apple-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+                <div className="bg-white rounded-xl shadow-apple-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden">
+
+                  {/* Accent gradient bar */}
+                  <div className="h-[3px] bg-gradient-to-r from-accent to-accent-dark shrink-0 rounded-t-xl" />
+
                   {/* Header */}
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-                    <Dialog.Title className="text-[15px] font-semibold text-gray-900">
-                      {isEditMode ? "Edit vendor" : "Add vendor"}
-                    </Dialog.Title>
-                    <Dialog.Close className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                  <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                    <div>
+                      <Dialog.Title className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider">
+                        {isEditMode ? "Edit vendor" : "Add vendor"}
+                      </Dialog.Title>
+                      {isEditMode && editingVendor && (
+                        <p className="font-serif text-[18px] text-gray-800 mt-0.5 leading-tight">
+                          {editingVendor.name}
+                        </p>
+                      )}
+                    </div>
+                    <Dialog.Close className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors mt-0.5">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -235,71 +323,90 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                   </div>
 
                   {/* Tabs */}
-                  <div className="flex border-b border-gray-100 px-6 shrink-0 overflow-x-auto">
-                    {([
-                      { key: "info",      label: "Info" },
-                      { key: "packages",  label: "Packages" },
-                      { key: "documents", label: "Documents", badge: localDocuments.length > 0 ? localDocuments.length : null },
-                      { key: "payments",  label: "Payments",  badge: isEditMode && editingVendor && (editingVendor.payments ?? []).filter(p => !p.paidAt).length > 0 ? (editingVendor.payments ?? []).filter(p => !p.paidAt).length : null },
-                      { key: "meetings",  label: "Meetings",  badge: null },
-                    ] as { key: Tab; label: string; badge: number | null }[]).map(({ key, label, badge }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setTab(key)}
-                        className={cn(
-                          "py-3 px-1 mr-5 text-sm font-medium border-b-2 -mb-px transition-colors shrink-0 flex items-center gap-1.5",
-                          tab === key
-                            ? "border-accent text-accent"
-                            : "border-transparent text-gray-500 hover:text-gray-700"
-                        )}
-                      >
-                        {label}
-                        {badge != null && (
-                          <span className="bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5 leading-none">
-                            {badge}
+                  <div className="relative flex border-b border-gray-100 px-4 shrink-0 overflow-x-auto">
+                    {TAB_CONFIG.map(({ key, label, icon }) => {
+                      const badge = key === "documents" ? docsBadge : key === "payments" ? paymentsBadge : null;
+                      const isActive = tab === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setTab(key)}
+                          className={cn(
+                            "relative py-3 px-3 mr-1 text-[13px] font-medium -mb-px transition-colors shrink-0 flex items-center gap-1.5",
+                            isActive ? "text-accent" : "text-gray-400 hover:text-gray-600"
+                          )}
+                        >
+                          <span className={cn("transition-colors", isActive ? "text-accent" : "text-gray-400")}>
+                            {icon}
                           </span>
-                        )}
-                      </button>
-                    ))}
+                          {label}
+                          {badge != null && (
+                            <span className="bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5 leading-none">
+                              {badge}
+                            </span>
+                          )}
+                          {isActive && (
+                            <motion.span
+                              layoutId="tab-underline"
+                              className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full"
+                              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Content */}
                   <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                     <div className="overflow-y-auto flex-1 p-6 space-y-4">
+
                       {/* INFO TAB */}
                       {tab === "info" && (
                         <>
                           {/* Category */}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600">Category *</label>
-                            <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-col gap-2">
+                            <label className="font-serif text-[13px] tracking-wide text-gray-500">Category *</label>
+                            <div className="flex flex-wrap gap-1.5">
                               {CATEGORIES.map((c) => (
                                 <button
                                   key={c.value}
                                   type="button"
                                   onClick={() => setCategory(c.value)}
                                   className={cn(
-                                    "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150",
+                                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 flex items-center gap-1",
                                     category === c.value
-                                      ? "bg-accent text-white shadow-sm"
-                                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                      ? "border border-accent bg-accent/[0.08] text-accent"
+                                      : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
                                   )}
                                 >
+                                  {category === c.value && (
+                                    <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
                                   {c.label}
                                 </button>
                               ))}
                             </div>
                           </div>
 
-                          {/* Name */}
-                          <Input
-                            label="Vendor name *"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. The Grand Ballroom"
-                            required
-                          />
+                          {/* Vendor name — hero field */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-serif text-[13px] tracking-wide text-gray-500">Vendor name *</label>
+                            <div className="relative">
+                              <input
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g. The Grand Ballroom"
+                                required
+                                className="w-full px-0 py-2 text-[20px] font-serif text-gray-900 bg-transparent border-0 border-b-2 border-gray-200 placeholder:text-gray-300 outline-none transition-colors duration-200 focus:border-accent"
+                              />
+                            </div>
+                          </div>
+
+                          <SectionDivider label="Contact" />
 
                           {/* Contact + Email */}
                           <div className="grid grid-cols-2 gap-3">
@@ -334,6 +441,8 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                             />
                           </div>
 
+                          <SectionDivider label="Follow-up" />
+
                           {/* Last contacted + Follow-up */}
                           <div className="grid grid-cols-2 gap-3">
                             <Input
@@ -350,17 +459,16 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                             />
                           </div>
 
+                          <SectionDivider label="Notes" />
+
                           {/* Notes */}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-gray-600">Notes</label>
-                            <textarea
-                              value={notes}
-                              onChange={(e) => setNotes(e.target.value)}
-                              rows={3}
-                              placeholder="Availability, impressions, links to portfolios..."
-                              className="w-full px-4 py-3 rounded-md text-[15px] bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-150 resize-none focus:bg-white focus:shadow-apple-sm focus:ring-2 focus:ring-accent/25"
-                            />
-                          </div>
+                          <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            rows={3}
+                            placeholder="Availability, impressions, links to portfolios..."
+                            className="w-full px-4 py-3 rounded-md text-[15px] bg-gray-100 border-0 text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-150 resize-none focus:bg-white focus:shadow-apple-sm focus:ring-2 focus:ring-accent/25"
+                          />
                         </>
                       )}
 
@@ -368,14 +476,17 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                       {tab === "packages" && (
                         <div className="space-y-4">
                           {packages.map((row, i) => (
-                            <div key={row._key} className="rounded-lg border border-gray-100 p-4 space-y-3 relative">
+                            <div
+                              key={row._key}
+                              className="rounded-lg border border-gray-200 shadow-apple-xs border-l-2 border-l-accent p-4 space-y-3"
+                            >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Package {i + 1}</span>
+                                <span className="font-serif text-base text-gray-600">Package {i + 1}</span>
                                 {packages.length > 1 && (
                                   <button
                                     type="button"
                                     onClick={() => removePackageRow(row)}
-                                    className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                    className="w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -439,9 +550,12 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                           <button
                             type="button"
                             onClick={addPackageRow}
-                            className="w-full py-2.5 rounded-lg border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-accent hover:text-accent transition-colors"
+                            className="w-full py-3 rounded-full border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-accent hover:text-accent hover:bg-accent/[0.03] transition-all duration-150 flex items-center justify-center gap-1.5"
                           >
-                            + Add another package
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add another package
                           </button>
                         </div>
                       )}
@@ -455,9 +569,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                             onChange={setLocalDocuments}
                           />
                         ) : (
-                          <div className="py-12 text-center text-sm text-gray-400">
-                            Save the vendor first to attach documents.
-                          </div>
+                          <LockedTabState message="Save the vendor first to attach documents." />
                         )
                       )}
 
@@ -466,9 +578,7 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                         isEditMode && editingVendor ? (
                           <VendorPaymentsTab vendorId={editingVendor.id} initialPayments={editingVendor.payments} />
                         ) : (
-                          <div className="py-12 text-center text-sm text-gray-400">
-                            Save the vendor first to add payment milestones.
-                          </div>
+                          <LockedTabState message="Save the vendor first to add payment milestones." />
                         )
                       )}
 
@@ -477,23 +587,24 @@ export default function AddVendorDialog({ open, onOpenChange, editingVendor, onS
                         isEditMode && editingVendor ? (
                           <VendorMeetingsTab vendorId={editingVendor.id} initialMeetings={editingVendor.meetings} />
                         ) : (
-                          <div className="py-12 text-center text-sm text-gray-400">
-                            Save the vendor first to log meeting notes.
-                          </div>
+                          <LockedTabState message="Save the vendor first to log meeting notes." />
                         )
                       )}
                     </div>
 
-                    {/* Error + Footer */}
-                    <div className="px-6 pb-6 pt-4 border-t border-gray-100 shrink-0 space-y-3">
+                    {/* Footer */}
+                    <div className="px-6 pb-5 pt-4 border-t border-gray-100 bg-gray-50/60 shrink-0 space-y-3">
                       {error && (
                         <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
                       )}
                       <div className="flex gap-3">
                         <Dialog.Close asChild>
-                          <Button type="button" variant="secondary" size="md" className="flex-1">
+                          <button
+                            type="button"
+                            className="flex-1 px-4 py-2.5 rounded-md text-[15px] font-medium text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 transition-colors duration-150"
+                          >
                             Cancel
-                          </Button>
+                          </button>
                         </Dialog.Close>
                         <Button type="submit" variant="primary" size="md" loading={loading} className="flex-1">
                           {isEditMode ? "Save changes" : "Add vendor"}
