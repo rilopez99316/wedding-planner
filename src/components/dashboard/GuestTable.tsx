@@ -25,19 +25,19 @@ interface GuestTableProps {
 // ── KPI Bar ───────────────────────────────────────────────────────────────────
 
 function ProgressRing({ pct, color }: { pct: number; color: string }) {
-  const r = 16;
-  const circ = 2 * Math.PI * r; // ≈ 100.5
+  const r = 18;
+  const circ = 2 * Math.PI * r;
   const offset = circ - (circ * pct) / 100;
   return (
-    <svg width="40" height="40" viewBox="0 0 40 40" className="shrink-0">
-      <circle cx="20" cy="20" r={r} fill="none" stroke="#F2F2F2" strokeWidth="3" />
+    <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0">
+      <circle cx="22" cy="22" r={r} fill="none" stroke="#F2F2F2" strokeWidth="3" />
       <circle
-        cx="20" cy="20" r={r} fill="none"
+        cx="22" cy="22" r={r} fill="none"
         stroke={color} strokeWidth="3"
         strokeLinecap="round"
         strokeDasharray={circ}
         strokeDashoffset={offset}
-        transform="rotate(-90 20 20)"
+        transform="rotate(-90 22 22)"
         style={{ transition: "stroke-dashoffset 0.7s ease-out" }}
       />
     </svg>
@@ -55,28 +55,28 @@ function GuestKpiBar({ groups }: { groups: GuestGroupWithRelations[] }) {
     <FadeIn direction="up" delay={0}>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {/* Total Groups */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-4 py-4">
+        <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-blue-400 shadow-apple-sm px-4 py-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Total Groups</p>
-          <p className="text-3xl font-semibold text-gray-900">{total}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{groups.reduce((s, g) => s + g.guests.length, 0)} guests</p>
+          <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{total}</p>
+          <p className="text-xs text-gray-400 mt-1.5">{groups.reduce((s, g) => s + g.guests.length, 0)} guests</p>
         </div>
 
         {/* Invited % */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-4 py-4 flex items-center justify-between">
+        <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-blue-400 shadow-apple-sm px-4 py-4 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Invited</p>
-            <p className="text-3xl font-semibold text-gray-900">{invitedPct}%</p>
-            <p className="text-xs text-gray-400 mt-0.5">{invited} of {total}</p>
+            <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{invitedPct}%</p>
+            <p className="text-xs text-gray-400 mt-1.5">{invited} of {total}</p>
           </div>
           <ProgressRing pct={invitedPct} color="#0071E3" />
         </div>
 
         {/* RSVP % */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm px-4 py-4 flex items-center justify-between">
+        <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-green-400 shadow-apple-sm px-4 py-4 flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">RSVP'd</p>
-            <p className="text-3xl font-semibold text-gray-900">{respondedPct}%</p>
-            <p className="text-xs text-gray-400 mt-0.5">{responded} of {total}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">RSVP&apos;d</p>
+            <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{respondedPct}%</p>
+            <p className="text-xs text-gray-400 mt-1.5">{responded} of {total}</p>
           </div>
           <ProgressRing pct={respondedPct} color="#16A34A" />
         </div>
@@ -90,10 +90,15 @@ function GuestKpiBar({ groups }: { groups: GuestGroupWithRelations[] }) {
 function GuestAvatar({ name, tier }: { name: string; tier: string }) {
   const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
   return (
-    <div className={cn(
-      "w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
-      tier === "A" ? "bg-accent-light text-accent" : "bg-gray-100 text-gray-500"
-    )}>
+    <div
+      className={cn(
+        "w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
+        tier === "A" ? "bg-accent-light text-accent" : "bg-gray-100 text-gray-500"
+      )}
+      style={tier === "A" ? {
+        boxShadow: "0 0 0 1px #fff, 0 0 0 2px rgba(201,168,76,0.35)"
+      } : undefined}
+    >
       {initials}
     </div>
   );
@@ -105,7 +110,7 @@ function InvitationChip({ sentAt }: { sentAt: Date | null }) {
   const sent = !!sentAt;
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-0.5 border",
+      "inline-flex items-center gap-1 text-xs font-medium rounded-full px-2.5 py-0.5 border",
       sent
         ? "bg-accent-light text-accent border-accent/20"
         : "bg-gray-100 text-gray-500 border-gray-200"
@@ -122,7 +127,7 @@ function RsvpChip({ response }: { response: RsvpResponse | null }) {
   const responded = !!response;
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-0.5 border",
+      "inline-flex items-center gap-1 text-xs font-medium rounded-full px-2.5 py-0.5 border",
       responded
         ? "bg-green-50 text-green-700 border-green-200"
         : "bg-amber-50 text-amber-700 border-amber-200"
@@ -160,6 +165,17 @@ export default function GuestTable({ groups, events, weddingId }: GuestTableProp
     <div>
       <GuestKpiBar groups={groups} />
 
+      {/* Section heading */}
+      <div className="flex items-center gap-4 mb-4 mt-2">
+        <h3 className="font-serif font-light text-base text-gray-900 whitespace-nowrap">
+          {groups.length} {groups.length === 1 ? "group" : "groups"}
+        </h3>
+        <div
+          className="flex-1 h-px"
+          style={{ background: "linear-gradient(to right, rgba(201,168,76,0.35), transparent)" }}
+        />
+      </div>
+
       <div>
         {groups.map((group, index) => {
           const primaryGuest = group.guests.find((g) => !g.isPlusOne);
@@ -169,16 +185,24 @@ export default function GuestTable({ groups, events, weddingId }: GuestTableProp
           return (
             <FadeIn key={group.id} direction="up" delay={index * 0.03}>
               <div className={cn(
-                "group bg-white rounded-xl border border-gray-100 shadow-apple-sm hover:shadow-apple-md transition-shadow overflow-hidden mb-2",
+                "group relative bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm hover:shadow-apple-md hover:bg-white transition-all duration-200 overflow-hidden mb-2",
               )}>
+                {/* Gold left strip — A-list only */}
+                {group.invitationTier === "A" && (
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-0.5 opacity-50 group-hover:opacity-80 transition-opacity duration-200"
+                    style={{ background: "linear-gradient(to bottom, rgba(201,168,76,0.6), rgba(201,168,76,0.15))" }}
+                  />
+                )}
+
                 {/* Row content */}
-                <div className="flex items-start gap-3 px-4 py-3.5">
+                <div className="flex items-start gap-3 px-4 py-4">
                   {/* Left: avatar + info */}
                   <GuestAvatar name={group.groupName} tier={group.invitationTier} />
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[14px] font-semibold text-gray-900">{group.groupName}</span>
+                      <span className="font-serif text-[16px] font-light text-gray-900 leading-snug">{group.groupName}</span>
                       <Badge variant={group.invitationTier === "A" ? "accent" : "default"} className="text-[10px]">
                         {group.invitationTier}-list
                       </Badge>
@@ -246,7 +270,7 @@ export default function GuestTable({ groups, events, weddingId }: GuestTableProp
                       className="overflow-hidden"
                     >
                       <div className="flex items-center gap-3 px-4 pb-3.5 pt-0">
-                        <div className="h-px flex-1 bg-red-100" />
+                        <div className="h-px flex-1 bg-red-50" />
                         <span className="text-xs text-red-600 font-medium">Remove &ldquo;{group.groupName}&rdquo; and all their data?</span>
                         <button
                           onClick={() => handleDelete(group.id)}
