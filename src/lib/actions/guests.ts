@@ -31,7 +31,7 @@ export async function addGuestGroupAction(formData: unknown) {
   if (!session?.user?.id) throw new Error("Unauthorized.");
 
   const parsed = guestGroupSchema.safeParse(formData);
-  if (!parsed.success) throw new Error("Invalid data: " + JSON.stringify(parsed.error.flatten()));
+  if (!parsed.success) throw new Error("Invalid input. Please check your data and try again.");
 
   const wedding = await getWeddingForUser(session.user.id);
   const data = parsed.data;
@@ -124,6 +124,11 @@ export async function deleteGuestGroupAction(groupId: string) {
 
 export async function searchGuestsAction(query: string, weddingId: string) {
   if (!query || query.trim().length < 2) return [];
+
+  const session = await auth();
+  if (!session?.user?.id) return [];
+  const wedding = await getWeddingForUser(session.user.id);
+  if (wedding.id !== weddingId) return [];
 
   const groups = await db.guestGroup.findMany({
     where: {

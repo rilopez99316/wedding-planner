@@ -57,7 +57,7 @@ export default function AddGuestDialog({ weddingId, events }: AddGuestDialogProp
     setGroupName("");
     setTier("A");
     setHasPlusOne(false);
-    setGuests([{ firstName: "", lastName: "", email: "", phone: "" }]);
+    setGuests([{ id: crypto.randomUUID(), firstName: "", lastName: "", email: "", phone: "" }]);
     setSelectedEventIds(events.map((e) => e.id));
     setError("");
   }
