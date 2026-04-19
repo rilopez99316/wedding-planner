@@ -88,7 +88,8 @@ function CampaignStatTile({
       )}>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{label}</p>
-          <motion.p className={cn("font-serif text-4xl font-light tabular-nums leading-none", numberColor[color])}>
+          <motion.p className={cn("text-4xl font-bold tabular-nums leading-none", numberColor[color])}>
+
             {rounded}
           </motion.p>
           <p className="text-xs text-gray-400 mt-1.5">

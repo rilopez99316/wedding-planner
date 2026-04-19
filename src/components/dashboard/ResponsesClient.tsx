@@ -181,16 +181,16 @@ export default function ResponsesClient({
       {/* Response rate bar */}
       <FadeIn direction="up" delay={0.18}>
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-1.5 bg-rose-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-violet-100 rounded-full overflow-hidden">
             <motion.div
               className="h-full rounded-full"
-              style={{ background: "linear-gradient(90deg, #fca5a5, #f43f5e)" }}
+              style={{ background: "linear-gradient(90deg, #c4b5fd, #7c3aed)" }}
               initial={{ width: 0 }}
               animate={{ width: `${respondedPct}%` }}
               transition={{ duration: 1.1, ease: "easeOut", delay: 0.3 }}
             />
           </div>
-          <span className="text-[11px] text-rose-400 font-medium tabular-nums shrink-0">
+          <span className="text-[11px] text-violet-500 font-medium tabular-nums shrink-0">
             {respondedPct}% responded
           </span>
         </div>

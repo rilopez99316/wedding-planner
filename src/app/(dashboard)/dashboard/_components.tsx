@@ -167,7 +167,7 @@ export function PrimaryStatCard({
       <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-5 ${iconBg} ${iconColor}`}>
         <Icon path={iconPath} />
       </div>
-      <div className="font-serif text-4xl font-light text-gray-900 tabular-nums tracking-tight leading-none mb-2">
+      <div className="font-serif text-5xl font-normal text-gray-900 tabular-nums leading-none mb-2" style={{ letterSpacing: "-0.025em" }}>
         {value}
       </div>
       <div className="text-sm font-semibold text-gray-700">{label}</div>
@@ -221,7 +221,7 @@ export function JourneyCard({
       </div>
 
       {/* Headline stat */}
-      <div className="font-serif text-2xl font-light text-gray-900 leading-tight">{stat}</div>
+      <div className="font-serif text-2xl font-normal text-gray-900 leading-tight" style={{ letterSpacing: "-0.015em" }}>{stat}</div>
 
       {/* Label + status badge */}
       <div className="flex items-center justify-between gap-2">
@@ -250,7 +250,7 @@ export function GradientProgressBar({
   return (
     <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="font-serif text-base font-light text-gray-900">Planning progress</span>
+        <span className="font-serif text-base font-normal text-gray-900">Planning progress</span>
         <span className="text-sm font-semibold text-accent">{pct}%</span>
       </div>
 
@@ -320,7 +320,7 @@ export function BudgetBar({
   return (
     <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 shadow-apple-sm p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <span className="font-serif text-base font-light text-gray-900">Budget snapshot</span>
+        <span className="font-serif text-base font-normal text-gray-900">Budget snapshot</span>
         <Link href="/dashboard/budget" className="text-xs text-accent hover:underline font-medium">
           Manage →
         </Link>
@@ -341,21 +341,21 @@ export function BudgetBar({
       {/* Three stat columns */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
-          <div className="font-serif text-base font-light text-gray-900">{formatCurrency(amountPaid)}</div>
+          <div className="font-serif text-lg font-normal text-gray-900" style={{ letterSpacing: "-0.01em" }}>{formatCurrency(amountPaid)}</div>
           <div className="flex items-center justify-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-accent" />
             <span className="text-xs text-gray-400">Paid</span>
           </div>
         </div>
         <div>
-          <div className="font-serif text-base font-light text-gray-900">{formatCurrency(estimatedSpend)}</div>
+          <div className="font-serif text-lg font-normal text-gray-900" style={{ letterSpacing: "-0.01em" }}>{formatCurrency(estimatedSpend)}</div>
           <div className="flex items-center justify-center gap-1 mt-1">
             <div className="w-2 h-2 rounded-full bg-accent/30" />
             <span className="text-xs text-gray-400">Estimated</span>
           </div>
         </div>
         <div>
-          <div className={`font-serif text-base font-light ${isOverBudget ? "text-red-600" : "text-gray-900"}`}>
+          <div className={`font-serif text-lg font-normal ${isOverBudget ? "text-red-600" : "text-gray-900"}`} style={{ letterSpacing: "-0.01em" }}>
             {formatCurrency(totalBudget)}
           </div>
           <div className="flex items-center justify-center gap-1 mt-1">

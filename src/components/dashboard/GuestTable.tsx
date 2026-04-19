@@ -57,7 +57,7 @@ function GuestKpiBar({ groups }: { groups: GuestGroupWithRelations[] }) {
         {/* Total Groups */}
         <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-blue-400 shadow-apple-sm px-4 py-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Total Groups</p>
-          <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{total}</p>
+          <p className="text-4xl font-bold text-gray-900 tabular-nums leading-none">{total}</p>
           <p className="text-xs text-gray-400 mt-1.5">{groups.reduce((s, g) => s + g.guests.length, 0)} guests</p>
         </div>
 
@@ -65,7 +65,7 @@ function GuestKpiBar({ groups }: { groups: GuestGroupWithRelations[] }) {
         <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-blue-400 shadow-apple-sm px-4 py-4 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Invited</p>
-            <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{invitedPct}%</p>
+            <p className="text-4xl font-bold text-gray-900 tabular-nums leading-none">{invitedPct}%</p>
             <p className="text-xs text-gray-400 mt-1.5">{invited} of {total}</p>
           </div>
           <ProgressRing pct={invitedPct} color="#0071E3" />
@@ -75,7 +75,7 @@ function GuestKpiBar({ groups }: { groups: GuestGroupWithRelations[] }) {
         <div className="bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 border-t-green-400 shadow-apple-sm px-4 py-4 flex items-center justify-between">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">RSVP&apos;d</p>
-            <p className="font-serif text-4xl font-light text-gray-900 tabular-nums leading-none">{respondedPct}%</p>
+            <p className="text-4xl font-bold text-gray-900 tabular-nums leading-none">{respondedPct}%</p>
             <p className="text-xs text-gray-400 mt-1.5">{responded} of {total}</p>
           </div>
           <ProgressRing pct={respondedPct} color="#16A34A" />
@@ -202,7 +202,7 @@ export default function GuestTable({ groups, events, weddingId }: GuestTableProp
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-serif text-[16px] font-light text-gray-900 leading-snug">{group.groupName}</span>
+                      <span className="font-serif text-[16px] font-normal text-gray-900 leading-snug">{group.groupName}</span>
                       <Badge variant={group.invitationTier === "A" ? "accent" : "default"} className="text-[10px]">
                         {group.invitationTier}-list
                       </Badge>
