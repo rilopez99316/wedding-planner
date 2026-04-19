@@ -20,18 +20,44 @@ interface InvitationsClientProps {
   groups: GroupWithGuests[];
 }
 
+// ── Progress ring ─────────────────────────────────────────────────────────────
+
+function ProgressRing({ pct, color }: { pct: number; color: string }) {
+  const r = 18;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (circ * pct) / 100;
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0">
+      <circle cx="22" cy="22" r={r} fill="none" stroke="#F2F2F2" strokeWidth="3" />
+      <circle
+        cx="22" cy="22" r={r} fill="none"
+        stroke={color} strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        transform="rotate(-90 22 22)"
+        style={{ transition: "stroke-dashoffset 0.7s ease-out" }}
+      />
+    </svg>
+  );
+}
+
 // ── Animated count tile ───────────────────────────────────────────────────────
 
 function CampaignStatTile({
   label,
   count,
+  total,
   color,
   delay,
+  ringColor,
 }: {
   label: string;
   count: number;
+  total: number;
   color: "gray" | "amber" | "green";
   delay: number;
+  ringColor?: string;
 }) {
   const count$ = useMotionValue(0);
   const rounded = useTransform(count$, Math.round);
@@ -41,10 +67,10 @@ function CampaignStatTile({
     return controls.stop;
   }, [count, count$]);
 
-  const colorMap = {
-    gray: "bg-white border-gray-100",
-    amber: "bg-amber-50 border-amber-100",
-    green: "bg-green-50 border-green-100",
+  const borderTop = {
+    gray: "border-t-gray-300",
+    amber: "border-t-amber-400",
+    green: "border-t-green-400",
   };
   const numberColor = {
     gray: "text-gray-900",
@@ -52,13 +78,26 @@ function CampaignStatTile({
     green: "text-green-800",
   };
 
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+
   return (
     <FadeIn direction="up" delay={delay}>
-      <div className={cn("rounded-xl border shadow-apple-sm px-4 py-4", colorMap[color])}>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{label}</p>
-        <motion.p className={cn("text-3xl font-semibold", numberColor[color])}>
-          {rounded}
-        </motion.p>
+      <div className={cn(
+        "bg-[#FDFCFB] rounded-xl border border-gray-100 border-t-2 shadow-apple-sm px-4 py-4 flex items-center justify-between",
+        borderTop[color]
+      )}>
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">{label}</p>
+          <motion.p className={cn("font-serif text-4xl font-light tabular-nums leading-none", numberColor[color])}>
+            {rounded}
+          </motion.p>
+          <p className="text-xs text-gray-400 mt-1.5">
+            {count === 1 ? "group" : "groups"}
+          </p>
+        </div>
+        {ringColor && (
+          <ProgressRing pct={pct} color={ringColor} />
+        )}
       </div>
     </FadeIn>
   );
@@ -88,8 +127,10 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
     (g) => g.guests.some((gu) => gu.invitationSentAt) && !g.rsvpResponse
   );
   const respondedGroups = groups.filter((g) => g.rsvpResponse);
+  const invitedGroups = groups.filter((g) => g.guests.some((gu) => gu.invitationSentAt));
+  const total = groups.length;
+  const invitedPct = total > 0 ? Math.round((invitedGroups.length / total) * 100) : 0;
 
-  // Auto-dismiss result after 5 seconds
   useEffect(() => {
     if (!result) return;
     const t = setTimeout(() => setResult(null), 5000);
@@ -134,13 +175,49 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
     return "not-invited";
   }
 
+  if (groups.length === 0) {
+    return (
+      <FadeIn direction="up" delay={0}>
+        <div className="max-w-3xl flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <p className="text-[15px] font-semibold text-gray-900">No guests yet</p>
+          <p className="text-sm text-gray-400 mt-1 max-w-xs">Add guests from the Guest List to start sending invitations.</p>
+        </div>
+      </FadeIn>
+    );
+  }
+
   return (
     <div className="max-w-3xl space-y-5">
       {/* Campaign stat tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <CampaignStatTile label="Not Invited" count={notInvitedGroups.length} color="gray" delay={0} />
-        <CampaignStatTile label="Awaiting Response" count={pendingGroups.length} color="amber" delay={0.05} />
-        <CampaignStatTile label="Responded" count={respondedGroups.length} color="green" delay={0.1} />
+        <CampaignStatTile
+          label="Not Invited"
+          count={notInvitedGroups.length}
+          total={total}
+          color="gray"
+          delay={0}
+        />
+        <CampaignStatTile
+          label="Awaiting Response"
+          count={pendingGroups.length}
+          total={total}
+          color="amber"
+          delay={0.05}
+          ringColor="#F59E0B"
+        />
+        <CampaignStatTile
+          label="Responded"
+          count={respondedGroups.length}
+          total={total}
+          color="green"
+          delay={0.1}
+          ringColor="#22C55E"
+        />
       </div>
 
       {/* Result notification */}
@@ -196,51 +273,77 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
       </AnimatePresence>
 
       {/* Action bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-apple-sm">
-        <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-gray-900">Send Invitations</p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {notInvitedGroups.length > 0
-              ? `${notInvitedGroups.length} group${notInvitedGroups.length !== 1 ? "s" : ""} haven't received an invitation yet`
-              : "All groups have been invited"}
-          </p>
+      <div className="flex flex-col gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-apple-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-gray-900">Send Invitations</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {notInvitedGroups.length > 0
+                ? `${notInvitedGroups.length} group${notInvitedGroups.length !== 1 ? "s" : ""} haven't received an invitation yet`
+                : "All groups have been invited"}
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="primary"
+              size="sm"
+              loading={sendingAll}
+              onClick={handleSendAll}
+              disabled={notInvitedGroups.length === 0}
+            >
+              <SendIcon className="w-3.5 h-3.5 mr-1.5" />
+              Send All
+              {notInvitedGroups.length > 0 && (
+                <span className="ml-1.5 bg-white/25 rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold">
+                  {notInvitedGroups.length}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              loading={sendingReminders}
+              onClick={handleSendReminders}
+              disabled={pendingGroups.length === 0}
+              className={cn(pendingGroups.length > 0 && "border-amber-300 text-amber-700 hover:bg-amber-50")}
+            >
+              Remind
+              {pendingGroups.length > 0 && (
+                <span className="ml-1.5 bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold">
+                  {pendingGroups.length}
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <Button
-            variant="primary"
-            size="sm"
-            loading={sendingAll}
-            onClick={handleSendAll}
-            disabled={notInvitedGroups.length === 0}
-          >
-            <SendIcon className="w-3.5 h-3.5 mr-1.5" />
-            Send All
-            {notInvitedGroups.length > 0 && (
-              <span className="ml-1.5 bg-white/25 rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold">
-                {notInvitedGroups.length}
-              </span>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            loading={sendingReminders}
-            onClick={handleSendReminders}
-            disabled={pendingGroups.length === 0}
-            className={cn(pendingGroups.length > 0 && "border-amber-300 text-amber-700 hover:bg-amber-50")}
-          >
-            Remind
-            {pendingGroups.length > 0 && (
-              <span className="ml-1.5 bg-amber-100 text-amber-700 rounded-full px-1.5 py-0.5 text-[11px] leading-none font-semibold">
-                {pendingGroups.length}
-              </span>
-            )}
-          </Button>
+
+        {/* Campaign progress bar */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[11px] text-gray-400">
+              {invitedGroups.length} of {total} group{total !== 1 ? "s" : ""} invited
+            </p>
+            <p className="text-[11px] font-medium text-gray-500">{invitedPct}%</p>
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-accent rounded-full transition-all duration-700 ease-out"
+              style={{ width: `${invitedPct}%` }}
+            />
+          </div>
         </div>
       </div>
 
       {/* Groups table */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-apple-sm overflow-hidden">
+        {/* Column headers */}
+        <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] px-5 py-2 border-b border-gray-100 gap-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Group</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 w-20 text-center">Status</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 w-24 text-right">Sent</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 w-16 text-right">Action</p>
+        </div>
+
         <div className="divide-y divide-gray-50">
           {groups.map((group, index) => {
             const status = getGroupStatus(group);
@@ -256,6 +359,14 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
               "not-invited": "bg-gray-200",
             }[status];
 
+            const avatarColor = {
+              "responded": "bg-green-100 text-green-700",
+              "pending": "bg-amber-100 text-amber-700",
+              "not-invited": "bg-gray-100 text-gray-500",
+            }[status];
+
+            const initials = group.groupName.trim().charAt(0).toUpperCase();
+
             return (
               <FadeIn key={group.id} direction="up" delay={index * 0.025}>
                 <div className="relative flex items-center hover:bg-gray-50/60 transition-colors">
@@ -263,7 +374,15 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
                   <div className={cn("absolute left-0 top-0 bottom-0 w-1 rounded-none", statusBarColor)} />
 
                   {/* Content */}
-                  <div className="flex flex-1 items-center gap-4 pl-5 pr-4 py-3.5">
+                  <div className="flex flex-1 items-center gap-3 pl-5 pr-4 py-3.5">
+                    {/* Avatar */}
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0",
+                      avatarColor
+                    )}>
+                      {initials}
+                    </div>
+
                     {/* Group info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium text-gray-900">{group.groupName}</p>
@@ -284,7 +403,7 @@ export default function InvitationsClient({ groups }: InvitationsClientProps) {
                     </div>
 
                     {/* Status badge */}
-                    <div className="shrink-0">
+                    <div className="shrink-0 w-20 flex justify-center">
                       {status === "responded" && <Badge variant="success">Responded</Badge>}
                       {status === "pending" && <Badge variant="warning">Awaiting</Badge>}
                       {status === "not-invited" && <Badge variant="default">Not sent</Badge>}
