@@ -12,6 +12,48 @@ import {
 } from "@/lib/actions/accommodations";
 import type { HotelBlock } from "@prisma/client";
 
+// ── Hotel logo data ────────────────────────────────────────────────────────────
+
+const HOTEL_DOMAINS: Record<string, string> = {
+  "Marriott":             "marriott.com",
+  "Hilton":               "hilton.com",
+  "Hyatt":                "hyatt.com",
+  "IHG":                  "ihg.com",
+  "Wyndham":              "wyndham.com",
+  "Best Western":         "bestwestern.com",
+  "Radisson":             "radissonhotels.com",
+  "Sheraton":             "marriott.com",
+  "Westin":               "marriott.com",
+  "W Hotels":             "marriott.com",
+  "Four Seasons":         "fourseasons.com",
+  "Ritz-Carlton":         "ritzcarlton.com",
+  "Waldorf Astoria":      "waldorfastoria.com",
+  "InterContinental":     "ihg.com",
+  "Kimpton":              "ihg.com",
+  "Holiday Inn":          "ihg.com",
+  "Courtyard":            "marriott.com",
+  "Hampton Inn":          "hilton.com",
+  "DoubleTree":           "hilton.com",
+  "Embassy Suites":       "hilton.com",
+  "Curio Collection":     "hilton.com",
+  "Grand Hyatt":          "hyatt.com",
+  "Park Hyatt":           "hyatt.com",
+  "Andaz":                "hyatt.com",
+  "Autograph Collection": "marriott.com",
+  "Airbnb":               "airbnb.com",
+  "VRBO":                 "vrbo.com",
+};
+
+function getHotelLogo(name: string): string | null {
+  const domain = HOTEL_DOMAINS[name]
+    ?? Object.entries(HOTEL_DOMAINS).find(([key]) =>
+        name.toLowerCase().includes(key.toLowerCase())
+      )?.[1];
+  return domain
+    ? `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+    : null;
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface AccommodationsClientProps {
@@ -123,6 +165,35 @@ function formatDeadline(deadline: Date): string {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function HotelLogoImg({ name, size }: { name: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  const logo = getHotelLogo(name);
+  const initials = name.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase()
+    || name.slice(0, 2).toUpperCase();
+
+  if (!logo || failed) {
+    return (
+      <span
+        className="flex items-center justify-center text-amber-600 font-semibold select-none"
+        style={{ fontSize: size * 0.35 }}
+      >
+        {initials}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={logo}
+      alt={name}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+      className="object-contain w-full h-full"
+    />
+  );
+}
 
 function HotelIcon() {
   return (
@@ -583,11 +654,15 @@ export default function AccommodationsClient({ hotels }: AccommodationsClientPro
               ) : (
                 <>
                   {/* Card body */}
+                  <div className="relative group">
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-amber-400 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   <div className="p-5 flex gap-4">
                     {/* Left: icon + name */}
                     <div className="flex flex-col items-start gap-3 min-w-0 flex-1">
                       <div className="flex items-center gap-3">
-                        <HotelIcon />
+                        <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 shadow-apple-xs flex items-center justify-center shrink-0 overflow-hidden">
+                          <HotelLogoImg name={h.name} size={40} />
+                        </div>
                         <div className="min-w-0">
                           <p className="text-[15px] font-semibold text-gray-900 leading-tight">{h.name}</p>
                           {h.address && (
@@ -722,6 +797,7 @@ export default function AccommodationsClient({ hotels }: AccommodationsClientPro
                         </a>
                       )}
                     </div>
+                  </div>
                   </div>
 
                   {/* Footer strip */}
