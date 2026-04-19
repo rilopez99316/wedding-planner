@@ -239,15 +239,6 @@ export default async function DashboardPage() {
       iconColor: "text-amber-600",
       borderColor: "border-t-amber-400",
     },
-    {
-      label: stats.daysUntilWedding > 0 ? "Days to go" : "Wedding day",
-      value: stats.daysUntilWedding > 0 ? stats.daysUntilWedding : "Today!",
-      sub: formatDate(wedding.weddingDate),
-      iconPath: ICON_CLOCK,
-      iconBg: "bg-accent-light",
-      iconColor: "text-accent",
-      borderColor: "border-t-accent",
-    },
   ];
 
   // ── Six quick actions ──────────────────────────────────────────────────────
@@ -321,8 +312,8 @@ export default async function DashboardPage() {
           coverPhotoUrl={wedding.coverPhotoUrl}
         />
 
-        {/* Four primary stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Primary stat cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {primaryStatCards.map((card) => (
             <PrimaryStatCard key={card.label} {...card} />
           ))}

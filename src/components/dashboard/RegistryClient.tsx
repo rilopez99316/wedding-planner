@@ -12,6 +12,31 @@ import {
 } from "@/lib/actions/registry";
 import type { Registry, RegistryType } from "@prisma/client";
 
+// ── Store logo data ─────────────────────────────────────────────────────────
+
+const STORE_DOMAINS: Record<string, string> = {
+  "Amazon": "amazon.com",
+  "Target": "target.com",
+  "Zola": "zola.com",
+  "Crate & Barrel": "crateandbarrel.com",
+  "Williams Sonoma": "williams-sonoma.com",
+  "Pottery Barn": "potterybarn.com",
+  "Macy's": "macys.com",
+  "The Knot": "theknot.com",
+  "Honeyfund": "honeyfund.com",
+  "Zola Cash Fund": "zola.com",
+  "PayPal.me": "paypal.com",
+  "Venmo": "venmo.com",
+  "GoFundMe": "gofundme.com",
+};
+
+function getStoreLogo(store: string): string | null {
+  const domain = STORE_DOMAINS[store];
+  return domain
+    ? `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+    : null;
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const REGISTRY_STORES = [
@@ -84,6 +109,52 @@ function LockIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
     </svg>
+  );
+}
+
+function BotanicalMini({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 80 56" fill="none" className={className}>
+      <line x1="40" y1="52" x2="40" y2="6" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
+      <path d="M40 40 Q27 32 23 22" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M40 28 Q29 20 27 12" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <ellipse cx="21" cy="20" rx="5" ry="2" transform="rotate(-35 21 20)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="25" cy="10" rx="4" ry="1.6" transform="rotate(-50 25 10)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <path d="M40 40 Q53 32 57 22" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <path d="M40 28 Q51 20 53 12" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" />
+      <ellipse cx="59" cy="20" rx="5" ry="2" transform="rotate(35 59 20)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+      <ellipse cx="55" cy="10" rx="4" ry="1.6" transform="rotate(50 55 10)" stroke="currentColor" strokeWidth="0.7" fill="none" />
+    </svg>
+  );
+}
+
+// ── Store logo image with initials fallback ─────────────────────────────────
+
+function StoreLogoImg({ store, size }: { store: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  const logo = getStoreLogo(store);
+  const initials = store.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase() || store.slice(0, 2).toUpperCase();
+
+  if (!logo || failed) {
+    return (
+      <span
+        className="flex items-center justify-center text-amber-600 font-semibold select-none"
+        style={{ fontSize: size * 0.35 }}
+      >
+        {initials}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={logo}
+      alt={store}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+      className="object-contain w-full h-full"
+    />
   );
 }
 
@@ -220,30 +291,69 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
 
   // ── Form sub-components ────────────────────────────────────────────────
 
-  const fieldCls = "w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-accent bg-white transition-colors";
-  const labelCls = "block text-xs font-medium text-gray-500 mb-1";
+  const fieldCls = "w-full text-sm border border-amber-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/15 bg-white transition-colors placeholder:text-gray-300";
+  const labelCls = "block text-xs font-medium text-gray-500 mb-1.5 tracking-wide";
 
-  function StoreSelect({ form, onChange }: { form: FormState; onChange: (patch: Partial<FormState>) => void }) {
+  // Visual store picker — elegant pill chips, no external image dependency
+  function StorePicker({ form, onChange }: { form: FormState; onChange: (patch: Partial<FormState>) => void }) {
+    const label = activeTab === "REGISTRY" ? "Store" : "Platform";
+
     return (
       <div>
-        <label className={labelCls}>{activeTab === "REGISTRY" ? "Store" : "Platform"}</label>
-        <select
-          value={form.store}
-          onChange={(e) => onChange({ store: e.target.value, customStore: "" })}
-          className={fieldCls}
-        >
-          <option value="">Select…</option>
-          {presets.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
-        {form.store === "Custom" && (
-          <input
-            autoFocus
-            value={form.customStore}
-            onChange={(e) => onChange({ customStore: e.target.value })}
-            placeholder="Store or platform name"
-            className={cn(fieldCls, "mt-2")}
-          />
-        )}
+        <label className={labelCls}>{label}</label>
+        <div className="flex flex-wrap gap-2">
+          {presets.map((preset) => {
+            const isSelected = form.store === preset;
+            const isCustom = preset === "Custom";
+
+            return (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => onChange({ store: preset, customStore: "" })}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 whitespace-nowrap",
+                  isSelected
+                    ? "border-amber-400 bg-amber-50 text-amber-700 shadow-sm"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-amber-200 hover:bg-amber-50/40 hover:text-amber-700"
+                )}
+              >
+                {isCustom && (
+                  <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                )}
+                {preset}
+                {isSelected && (
+                  <svg className="w-3 h-3 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom name input — slides in when "Custom" is selected */}
+        <AnimatePresence>
+          {form.store === "Custom" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
+            >
+              <input
+                autoFocus
+                value={form.customStore}
+                onChange={(e) => onChange({ customStore: e.target.value })}
+                placeholder="Store or platform name"
+                className={cn(fieldCls, "mt-2.5")}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -266,7 +376,9 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
   function DescriptionInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
     return (
       <div>
-        <label className={labelCls}>Description <span className="text-gray-400 font-normal">(optional)</span></label>
+        <label className={labelCls}>
+          Description <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
         <input
           type="text"
           value={value}
@@ -287,9 +399,15 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
           role="switch"
           aria-checked={value}
           onClick={() => onChange(!value)}
-          className={cn("relative w-9 h-5 rounded-full transition-colors", value ? "bg-accent" : "bg-gray-200")}
+          className={cn(
+            "relative w-9 h-5 rounded-full transition-colors",
+            value ? "bg-amber-500" : "bg-gray-200"
+          )}
         >
-          <span className={cn("absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform", value && "translate-x-4")} />
+          <span className={cn(
+            "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
+            value && "translate-x-4"
+          )} />
         </button>
         <span className="text-xs text-gray-500">{value ? "Visible to guests" : "Hidden from guests"}</span>
       </div>
@@ -312,35 +430,43 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
         </div>
       )}
 
-      {/* Tabs + Add button */}
-      <div className="flex items-center justify-between mb-5">
-        {/* Pill tabs */}
-        <div className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-2xl">
+      {/* ── Tabs + Add button ────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-6">
+        {/* Editorial sliding-indicator tabs */}
+        <div className="flex items-center gap-7 border-b border-gray-100 pb-0">
           {(["REGISTRY", "FUND"] as RegistryType[]).map((tab) => {
             const count = registries.filter((r) => r.type === tab).length;
+            const isActive = activeTab === tab;
             return (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); cancelAdd(); cancelEdit(); setError(null); }}
-                className={cn(
-                  "flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-150",
-                  activeTab === tab
-                    ? "bg-white text-gray-900 shadow-apple-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
+                className="relative pb-3 flex items-center gap-2 group"
               >
                 {tab === "REGISTRY"
-                  ? <GiftIcon className="w-4 h-4" />
-                  : <HeartIcon className="w-4 h-4" />
+                  ? <GiftIcon className={cn("w-4 h-4 transition-colors", isActive ? "text-gray-700" : "text-gray-400 group-hover:text-gray-500")} />
+                  : <HeartIcon className={cn("w-4 h-4 transition-colors", isActive ? "text-gray-700" : "text-gray-400 group-hover:text-gray-500")} />
                 }
-                {tab === "REGISTRY" ? "Gift Registries" : "Funds"}
+                <span className={cn(
+                  "text-sm font-medium transition-colors duration-150",
+                  isActive ? "text-gray-900" : "text-gray-400 group-hover:text-gray-600"
+                )}>
+                  {tab === "REGISTRY" ? "Gift Registries" : "Funds"}
+                </span>
                 {count > 0 && (
                   <span className={cn(
-                    "text-[11px] font-semibold rounded-full px-1.5 py-0.5 min-w-[18px] text-center",
-                    activeTab === tab ? "bg-accent text-white" : "bg-gray-200 text-gray-500"
+                    "text-[11px] font-semibold rounded-full px-1.5 py-0.5 min-w-[18px] text-center transition-colors",
+                    isActive ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"
                   )}>
                     {count}
                   </span>
+                )}
+                {isActive && (
+                  <motion.div
+                    layoutId="registry-tab-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-full"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  />
                 )}
               </button>
             );
@@ -357,7 +483,7 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
         </Button>
       </div>
 
-      {/* Add form — animated */}
+      {/* ── Add form — animated ──────────────────────────────────────── */}
       <AnimatePresence>
         {adding && (
           <motion.div
@@ -366,18 +492,16 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.99 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="mb-5 bg-white rounded-2xl border border-gray-200 shadow-apple-md overflow-hidden"
+            className="mb-5 bg-white rounded-2xl border border-amber-100 shadow-apple-md overflow-hidden"
           >
-            <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-800">
+            <div className="px-5 pt-4 pb-3 border-b border-amber-100/80">
+              <p className="font-serif text-[16px] font-medium text-gray-800">
                 {activeTab === "REGISTRY" ? "Add Gift Registry" : "Add Fund"}
               </p>
             </div>
             <div className="p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <StoreSelect form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
-                <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
-              </div>
+              <StorePicker form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
+              <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
               {activeTab === "FUND" && (
                 <DescriptionInput
                   value={addForm.description}
@@ -396,22 +520,17 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
         )}
       </AnimatePresence>
 
-      {/* List */}
+      {/* ── List ────────────────────────────────────────────────────── */}
       {filtered.length === 0 && !adding ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center">
-          <div className={cn(
-            "w-12 h-12 rounded-xl flex items-center justify-center mb-4",
-            activeTab === "REGISTRY" ? "bg-accent-light text-accent" : "bg-red-50 text-red-400"
-          )}>
-            {activeTab === "REGISTRY"
-              ? <GiftIcon className="w-6 h-6" />
-              : <HeartIcon className="w-6 h-6" />
-            }
-          </div>
-          <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
+        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-amber-100 text-center">
+          <BotanicalMini className={cn(
+            "w-14 mb-4",
+            activeTab === "REGISTRY" ? "text-amber-300" : "text-rose-300"
+          )} />
+          <h3 className="font-serif text-xl font-light text-gray-600 mb-1">
             {activeTab === "REGISTRY" ? "No registries yet" : "No funds yet"}
           </h3>
-          <p className="text-sm text-gray-500 max-w-xs leading-relaxed mb-6">
+          <p className="text-sm italic text-gray-400 max-w-xs leading-relaxed mb-6">
             {activeTab === "REGISTRY"
               ? "Add links to Amazon, Zola, Target, and more."
               : "Add links to Honeyfund, PayPal.me, GoFundMe, and more."}
@@ -435,14 +554,15 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="group bg-white rounded-xl border border-gray-100 shadow-apple-sm hover:shadow-apple-md transition-shadow overflow-hidden"
+                  className="group relative bg-white rounded-xl border border-gray-100/80 shadow-apple-sm hover:shadow-apple-md transition-all overflow-hidden"
                 >
+                  {/* Gold left accent bar — fades in on hover */}
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-l-xl" />
+
                   {isEditing ? (
-                    <div className="p-4 space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <StoreSelect form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
-                        <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
-                      </div>
+                    <div className="p-4 pl-5 space-y-4">
+                      <StorePicker form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
+                      <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
                       {activeTab === "FUND" && (
                         <DescriptionInput
                           value={editForm.description}
@@ -466,10 +586,17 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
                     </div>
                   ) : (
                     <>
-                      <div className="relative flex items-start gap-4 px-5 py-4">
+                      <div className="relative flex items-center gap-3 pl-5 pr-4 py-3.5">
+                        {/* Store logo circle */}
+                        <div className="shrink-0 w-10 h-10 rounded-full bg-gray-50 border border-gray-100 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-amber-200 group-hover:shadow-amber-50/80">
+                          <StoreLogoImg store={entry.store} size={40} />
+                        </div>
+
                         {/* Store info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[15px] font-semibold text-gray-900 mb-0.5">{entry.store}</p>
+                          <p className="font-serif text-[17px] font-medium text-gray-900 mb-0.5 leading-snug">
+                            {entry.store}
+                          </p>
                           {entry.description && (
                             <p className="text-sm text-gray-400 italic mb-1">{entry.description}</p>
                           )}
@@ -477,21 +604,21 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
                             href={entry.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-accent hover:underline font-medium"
+                            className="inline-flex items-center gap-1 text-[11px] tracking-[0.12em] uppercase text-gray-400 hover:text-gray-700 transition-colors font-sans"
                           >
                             Visit
                             <ExternalLinkIcon className="w-3 h-3" />
                           </a>
                         </div>
 
-                        {/* Public toggle badge */}
+                        {/* Public/Hidden badge — amber for public */}
                         <button
                           onClick={() => handleTogglePublic(entry)}
                           title={entry.isPublic ? "Visible to guests — click to hide" : "Hidden — click to show"}
                           className={cn(
                             "shrink-0 flex items-center gap-1.5 text-xs font-medium rounded-lg px-2.5 py-1.5 border transition-colors",
                             entry.isPublic
-                              ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                              ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                               : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
                           )}
                         >
@@ -502,7 +629,7 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
                           {entry.isPublic ? "Public" : "Hidden"}
                         </button>
 
-                        {/* Hover actions */}
+                        {/* Hover edit/delete actions */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 shrink-0">
                           <button
                             onClick={() => startEdit(entry)}
