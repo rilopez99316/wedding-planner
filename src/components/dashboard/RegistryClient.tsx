@@ -12,6 +12,31 @@ import {
 } from "@/lib/actions/registry";
 import type { Registry, RegistryType } from "@prisma/client";
 
+// ── Store logo data ─────────────────────────────────────────────────────────
+
+const STORE_DOMAINS: Record<string, string> = {
+  "Amazon": "amazon.com",
+  "Target": "target.com",
+  "Zola": "zola.com",
+  "Crate & Barrel": "crateandbarrel.com",
+  "Williams Sonoma": "williams-sonoma.com",
+  "Pottery Barn": "potterybarn.com",
+  "Macy's": "macys.com",
+  "The Knot": "theknot.com",
+  "Honeyfund": "honeyfund.com",
+  "Zola Cash Fund": "zola.com",
+  "PayPal.me": "paypal.com",
+  "Venmo": "venmo.com",
+  "GoFundMe": "gofundme.com",
+};
+
+function getStoreLogo(store: string): string | null {
+  const domain = STORE_DOMAINS[store];
+  return domain
+    ? `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+    : null;
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const REGISTRY_STORES = [
@@ -100,6 +125,36 @@ function BotanicalMini({ className }: { className?: string }) {
       <ellipse cx="59" cy="20" rx="5" ry="2" transform="rotate(35 59 20)" stroke="currentColor" strokeWidth="0.7" fill="none" />
       <ellipse cx="55" cy="10" rx="4" ry="1.6" transform="rotate(50 55 10)" stroke="currentColor" strokeWidth="0.7" fill="none" />
     </svg>
+  );
+}
+
+// ── Store logo image with initials fallback ─────────────────────────────────
+
+function StoreLogoImg({ store, size }: { store: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  const logo = getStoreLogo(store);
+  const initials = store.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase() || store.slice(0, 2).toUpperCase();
+
+  if (!logo || failed) {
+    return (
+      <span
+        className="flex items-center justify-center text-amber-600 font-semibold select-none"
+        style={{ fontSize: size * 0.35 }}
+      >
+        {initials}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={logo}
+      alt={store}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+      className="object-contain w-full h-full"
+    />
   );
 }
 
@@ -237,29 +292,68 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
   // ── Form sub-components ────────────────────────────────────────────────
 
   const fieldCls = "w-full text-sm border border-amber-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/15 bg-white transition-colors placeholder:text-gray-300";
-  const labelCls = "block text-xs font-medium text-gray-500 mb-1 tracking-wide";
+  const labelCls = "block text-xs font-medium text-gray-500 mb-1.5 tracking-wide";
 
-  function StoreSelect({ form, onChange }: { form: FormState; onChange: (patch: Partial<FormState>) => void }) {
+  // Visual store picker — elegant pill chips, no external image dependency
+  function StorePicker({ form, onChange }: { form: FormState; onChange: (patch: Partial<FormState>) => void }) {
+    const label = activeTab === "REGISTRY" ? "Store" : "Platform";
+
     return (
       <div>
-        <label className={labelCls}>{activeTab === "REGISTRY" ? "Store" : "Platform"}</label>
-        <select
-          value={form.store}
-          onChange={(e) => onChange({ store: e.target.value, customStore: "" })}
-          className={fieldCls}
-        >
-          <option value="">Select…</option>
-          {presets.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
-        {form.store === "Custom" && (
-          <input
-            autoFocus
-            value={form.customStore}
-            onChange={(e) => onChange({ customStore: e.target.value })}
-            placeholder="Store or platform name"
-            className={cn(fieldCls, "mt-2")}
-          />
-        )}
+        <label className={labelCls}>{label}</label>
+        <div className="flex flex-wrap gap-2">
+          {presets.map((preset) => {
+            const isSelected = form.store === preset;
+            const isCustom = preset === "Custom";
+
+            return (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => onChange({ store: preset, customStore: "" })}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-sm font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 whitespace-nowrap",
+                  isSelected
+                    ? "border-amber-400 bg-amber-50 text-amber-700 shadow-sm"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-amber-200 hover:bg-amber-50/40 hover:text-amber-700"
+                )}
+              >
+                {isCustom && (
+                  <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                )}
+                {preset}
+                {isSelected && (
+                  <svg className="w-3 h-3 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom name input — slides in when "Custom" is selected */}
+        <AnimatePresence>
+          {form.store === "Custom" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
+            >
+              <input
+                autoFocus
+                value={form.customStore}
+                onChange={(e) => onChange({ customStore: e.target.value })}
+                placeholder="Store or platform name"
+                className={cn(fieldCls, "mt-2.5")}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -406,10 +500,8 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
               </p>
             </div>
             <div className="p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <StoreSelect form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
-                <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
-              </div>
+              <StorePicker form={addForm} onChange={(p) => setAddForm((f) => ({ ...f, ...p }))} />
+              <UrlInput value={addForm.url} onChange={(v) => setAddForm((f) => ({ ...f, url: v }))} />
               {activeTab === "FUND" && (
                 <DescriptionInput
                   value={addForm.description}
@@ -469,10 +561,8 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
 
                   {isEditing ? (
                     <div className="p-4 pl-5 space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <StoreSelect form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
-                        <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
-                      </div>
+                      <StorePicker form={editForm} onChange={(p) => setEditForm((f) => ({ ...f, ...p }))} />
+                      <UrlInput value={editForm.url} onChange={(v) => setEditForm((f) => ({ ...f, url: v }))} />
                       {activeTab === "FUND" && (
                         <DescriptionInput
                           value={editForm.description}
@@ -496,7 +586,12 @@ export default function RegistryClient({ registries }: RegistryClientProps) {
                     </div>
                   ) : (
                     <>
-                      <div className="relative flex items-start gap-4 pl-5 pr-4 py-4">
+                      <div className="relative flex items-center gap-3 pl-5 pr-4 py-3.5">
+                        {/* Store logo circle */}
+                        <div className="shrink-0 w-10 h-10 rounded-full bg-gray-50 border border-gray-100 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-amber-200 group-hover:shadow-amber-50/80">
+                          <StoreLogoImg store={entry.store} size={40} />
+                        </div>
+
                         {/* Store info */}
                         <div className="flex-1 min-w-0">
                           <p className="font-serif text-[17px] font-medium text-gray-900 mb-0.5 leading-snug">

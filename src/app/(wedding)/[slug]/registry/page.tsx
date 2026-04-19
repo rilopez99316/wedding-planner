@@ -2,6 +2,30 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import FadeIn from "@/components/ui/FadeIn";
 import Divider from "@/components/ui/Divider";
+import StoreLogo from "@/components/ui/StoreLogo";
+
+const STORE_DOMAINS: Record<string, string> = {
+  "Amazon": "amazon.com",
+  "Target": "target.com",
+  "Zola": "zola.com",
+  "Crate & Barrel": "crateandbarrel.com",
+  "Williams Sonoma": "williams-sonoma.com",
+  "Pottery Barn": "potterybarn.com",
+  "Macy's": "macys.com",
+  "The Knot": "theknot.com",
+  "Honeyfund": "honeyfund.com",
+  "Zola Cash Fund": "zola.com",
+  "PayPal.me": "paypal.com",
+  "Venmo": "venmo.com",
+  "GoFundMe": "gofundme.com",
+};
+
+function getStoreLogo(store: string): string | null {
+  const domain = STORE_DOMAINS[store];
+  return domain
+    ? `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+    : null;
+}
 
 function BotanicalOrnament({ className }: { className?: string }) {
   return (
@@ -217,9 +241,20 @@ export default async function RegistryPage({ params }: { params: { slug: string 
                       />
 
                       {/* Row ordinal */}
-                      <span className="relative z-10 text-[10px] tracking-[0.3em] text-gold/40 font-sans mr-8 shrink-0 self-start pt-3 tabular-nums">
+                      <span className="relative z-10 text-[10px] tracking-[0.3em] text-gold/40 font-sans mr-6 shrink-0 self-start pt-3 tabular-nums">
                         {ordinal}
                       </span>
+
+                      {/* Store logo */}
+                      <div className="relative z-10 shrink-0 self-center w-14 h-14 rounded-full bg-white/90 border border-gold/20 shadow-md flex items-center justify-center overflow-hidden mr-6 group-hover:scale-105 transition-transform duration-300">
+                        <StoreLogo
+                          store={r.store}
+                          logoUrl={getStoreLogo(r.store)}
+                          size={56}
+                          imgClassName="object-contain w-full h-full p-1"
+                          fallbackClassName="font-serif text-[#b8975a]/70 font-medium text-lg select-none"
+                        />
+                      </div>
 
                       {/* Store info */}
                       <div className="relative z-10 flex-1">
@@ -300,6 +335,17 @@ export default async function RegistryPage({ params }: { params: { slug: string 
                       className="absolute inset-0 pointer-events-none rounded-2xl"
                       style={{ opacity: 0.04, backgroundImage: GRAIN_SVG, backgroundSize: "200px 200px" }}
                     />
+
+                    {/* Store logo — top right */}
+                    <div className="absolute top-5 right-5 w-12 h-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center overflow-hidden z-10 opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300">
+                      <StoreLogo
+                        store={r.store}
+                        logoUrl={getStoreLogo(r.store)}
+                        size={48}
+                        imgClassName="object-contain w-full h-full p-1"
+                        fallbackClassName="font-serif text-gray-600 font-medium text-sm select-none"
+                      />
+                    </div>
 
                     {/* Decorative concentric rings */}
                     <svg
