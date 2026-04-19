@@ -31,6 +31,8 @@ function BotanicalOrnament({ className }: { className?: string }) {
   );
 }
 
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const wedding = await db.wedding.findUnique({ where: { slug: params.slug } });
   if (!wedding) return {};
@@ -63,10 +65,17 @@ export default async function RegistryPage({ params }: { params: { slug: string 
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden pt-36 pb-28 flex flex-col items-center text-center"
+        className="relative overflow-hidden pt-40 pb-36 flex flex-col items-center text-center"
         style={{ background: "linear-gradient(160deg, rgb(var(--w-hero-start)) 0%, rgb(var(--w-hero-mid)) 60%, rgb(var(--w-hero-mid)) 100%)" }}
       >
-        {/* Ghost background text */}
+        {/* Grain noise texture — print-quality depth */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{ opacity: 0.06, backgroundImage: GRAIN_SVG, backgroundSize: "200px 200px" }}
+        />
+
+        {/* Ghost background word */}
         <span
           aria-hidden="true"
           className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden font-serif font-light text-white"
@@ -75,7 +84,7 @@ export default async function RegistryPage({ params }: { params: { slug: string 
           Gifts
         </span>
 
-        {/* Diamond texture overlay */}
+        {/* Diamond lattice overlay */}
         <div
           aria-hidden="true"
           className="absolute inset-0 pointer-events-none"
@@ -95,20 +104,36 @@ export default async function RegistryPage({ params }: { params: { slug: string 
           </FadeIn>
 
           <FadeIn direction="up" delay={0.1}>
-            <BotanicalOrnament className="w-28 text-gold/50 mb-7" />
+            <BotanicalOrnament className="w-28 text-gold/50 mb-8" />
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.18}>
-            <h1
-              className="font-serif font-light text-white"
-              style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)", letterSpacing: "-0.02em" }}
-            >
-              Registry
-            </h1>
+          {/* Cinematic per-character title */}
+          <h1
+            className="font-serif font-light text-white"
+            style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)", letterSpacing: "-0.02em" }}
+          >
+            {"Registry".split("").map((char, i) => (
+              <span
+                key={i}
+                className="inline-block animate-fade-in [animation-fill-mode:both]"
+                style={{
+                  animationDelay: `${0.38 + i * 0.07}s`,
+                  animationDuration: "0.65s",
+                  animationTimingFunction: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                }}
+              >
+                {char}
+              </span>
+            ))}
+          </h1>
+
+          {/* Gold rule */}
+          <FadeIn direction="up" delay={0.9}>
+            <div className="w-14 h-px mt-8" style={{ background: "rgb(var(--w-gold) / 0.35)" }} />
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.26}>
-            <div className="flex items-center gap-5 mt-9">
+          <FadeIn direction="up" delay={1.0}>
+            <div className="flex items-center gap-5 mt-6">
               <div className="w-20 h-px bg-white/15" />
               <span className="text-white/20 text-[10px]">◆</span>
               <div className="w-20 h-px bg-white/15" />
@@ -116,32 +141,32 @@ export default async function RegistryPage({ params }: { params: { slug: string 
           </FadeIn>
         </div>
 
-        {/* Fade into page background */}
+        {/* Fade into page */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
           style={{ background: "linear-gradient(to bottom, transparent, rgb(var(--w-ivory)))" }}
         />
       </section>
 
       {/* ── Sentiment ────────────────────────────────────────────────────── */}
-      <section className="pt-20 pb-12 px-6">
+      <section className="pt-20 pb-14 px-6 bg-champagne/10">
         <div className="max-w-2xl mx-auto text-center">
           <FadeIn direction="up">
-            {/* Decorative opening quote */}
+            {/* Decorative opening quote — enlarged */}
             <span
               aria-hidden="true"
-              className="block font-serif text-gold/25 leading-none mb-3 select-none"
-              style={{ fontSize: "5rem" }}
+              className="block font-serif text-gold/30 leading-none mb-2 select-none"
+              style={{ fontSize: "7rem" }}
             >
               &ldquo;
             </span>
 
-            <p className="font-serif text-3xl md:text-4xl font-light text-navy leading-snug -mt-4">
+            <p className="font-serif text-3xl md:text-4xl font-light text-navy leading-snug -mt-8">
               Your presence is the greatest gift
             </p>
 
-            <p className="text-sm text-navy/50 font-sans leading-relaxed max-w-md mx-auto mt-5">
+            <p className="font-serif italic text-xl font-light text-navy/55 max-w-md mx-auto mt-6 leading-relaxed">
               {hasAny
                 ? "We are so grateful you'll be celebrating with us. If you wish to give a gift, you'll find our registries and funds below."
                 : "We are so grateful you'll be celebrating with us. If you wish to give a gift, registry links will appear here soon."}
@@ -149,16 +174,16 @@ export default async function RegistryPage({ params }: { params: { slug: string 
           </FadeIn>
 
           <FadeIn direction="up" delay={0.1}>
-            <div className="mt-10">
+            <div className="mt-12">
               <Divider diamond />
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ── Gift Registries — editorial list rows ────────────────────────── */}
+      {/* ── Gift Registries — editorial rows with ordinals + champagne swipe ─ */}
       {giftRegistries.length > 0 && (
-        <section className="py-10 px-6">
+        <section className="py-12 px-6">
           <div className="max-w-2xl mx-auto">
             <FadeIn direction="up">
               <p className="text-[10px] tracking-[0.3em] uppercase text-gold font-sans text-center mb-2">
@@ -167,62 +192,78 @@ export default async function RegistryPage({ params }: { params: { slug: string 
             </FadeIn>
 
             <div>
-              {giftRegistries.map((r, i) => (
-                <FadeIn key={r.id} direction="up" delay={i * 0.1}>
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={[
-                      "group flex items-center justify-between",
-                      "py-9 px-1",
-                      "border-b border-gold/15",
-                      i === 0 ? "border-t border-gold/15" : "",
-                      "hover:bg-champagne/20 -mx-4 px-4 rounded-xl",
-                      "transition-all duration-300",
-                    ].join(" ")}
-                  >
-                    <div>
-                      <p className="text-[10px] tracking-[0.3em] uppercase text-gold/60 font-sans mb-1.5">
-                        Gift Registry
-                      </p>
-                      <p
-                        className="font-serif font-light text-navy group-hover:text-navy/70 transition-colors duration-300"
-                        style={{ fontSize: "clamp(1.75rem, 4vw, 2.5rem)" }}
-                      >
-                        {r.store}
-                      </p>
-                    </div>
+              {giftRegistries.map((r, i) => {
+                const ordinal = String(i + 1).padStart(2, "0");
+                return (
+                  <FadeIn key={r.id} direction="up" delay={i * 0.1}>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={[
+                        "group relative overflow-hidden",
+                        "flex items-center",
+                        "py-10 -mx-4 px-4",
+                        "border-b border-gold/20",
+                        i === 0 ? "border-t border-gold/20" : "",
+                        "rounded-xl",
+                        "transition-all duration-300",
+                      ].join(" ")}
+                    >
+                      {/* Champagne swipe — reveals on hover from left */}
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-xl bg-champagne/25 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+                      />
 
-                    <div className="flex items-center gap-2 text-navy/30 group-hover:text-navy/65 group-hover:gap-4 transition-all duration-300 shrink-0 ml-6">
-                      <span className="hidden sm:inline text-[10px] tracking-[0.25em] uppercase font-sans">
-                        View Registry
+                      {/* Row ordinal */}
+                      <span className="relative z-10 text-[10px] tracking-[0.3em] text-gold/40 font-sans mr-8 shrink-0 self-start pt-3 tabular-nums">
+                        {ordinal}
                       </span>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </div>
-                  </a>
-                </FadeIn>
-              ))}
+
+                      {/* Store info */}
+                      <div className="relative z-10 flex-1">
+                        <p className="text-[10px] tracking-[0.3em] uppercase text-gold/60 font-sans mb-2">
+                          Gift Registry
+                        </p>
+                        <p
+                          className="font-serif font-light text-navy group-hover:text-navy/70 transition-colors duration-300"
+                          style={{ fontSize: "clamp(2.25rem, 5vw, 3.5rem)" }}
+                        >
+                          {r.store}
+                        </p>
+                      </div>
+
+                      {/* Hover arrow with translate */}
+                      <div className="relative z-10 flex items-center gap-2 text-navy/30 group-hover:text-navy/65 group-hover:translate-x-2 group-hover:gap-4 transition-all duration-300 shrink-0 ml-6">
+                        <span className="hidden sm:inline text-[10px] tracking-[0.25em] uppercase font-sans">
+                          View Registry
+                        </span>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </div>
+                    </a>
+                  </FadeIn>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {/* ── Honeymoon & Funds — dark editorial tiles ─────────────────────── */}
+      {/* ── Honeymoon & Funds — immersive dark cards with grain depth ────── */}
       {funds.length > 0 && (
-        <section className="py-14 px-6">
+        <section className="py-16 px-6">
           <div className="max-w-2xl mx-auto">
             <FadeIn direction="up">
-              <div className="flex flex-col items-center mb-10">
-                {/* Ring icon */}
+              <div className="flex flex-col items-center mb-12">
                 <svg
                   aria-hidden="true"
                   viewBox="0 0 48 48"
@@ -239,23 +280,34 @@ export default async function RegistryPage({ params }: { params: { slug: string 
               </div>
             </FadeIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {funds.map((r, i) => (
                 <FadeIn key={r.id} direction="up" delay={i * 0.1}>
                   <a
                     href={r.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative rounded-2xl p-8 overflow-hidden hover:brightness-110 transition-all duration-300 block min-h-44"
-                    style={{ background: "rgb(var(--w-hero-start))" }}
+                    className="group relative rounded-2xl p-9 overflow-hidden hover:brightness-110 transition-all duration-300 block min-h-52"
+                    style={{
+                      background: "linear-gradient(135deg, rgb(var(--w-hero-start)), rgb(var(--w-hero-mid)))",
+                      borderTop: "1px solid rgba(var(--w-gold), 0.2)",
+                      boxShadow: "0 20px 60px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.12)",
+                    }}
                   >
+                    {/* Grain texture on card */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 pointer-events-none rounded-2xl"
+                      style={{ opacity: 0.04, backgroundImage: GRAIN_SVG, backgroundSize: "200px 200px" }}
+                    />
+
                     {/* Decorative concentric rings */}
                     <svg
                       aria-hidden="true"
                       viewBox="0 0 120 120"
                       fill="none"
-                      className="absolute -right-4 -bottom-4 w-40 h-40 text-white pointer-events-none"
-                      style={{ opacity: 0.045 }}
+                      className="absolute -right-4 -bottom-4 w-44 h-44 text-white pointer-events-none"
+                      style={{ opacity: 0.055 }}
                     >
                       <circle cx="80" cy="80" r="65" stroke="currentColor" strokeWidth="0.8" />
                       <circle cx="80" cy="80" r="50" stroke="currentColor" strokeWidth="0.5" />
@@ -263,12 +315,12 @@ export default async function RegistryPage({ params }: { params: { slug: string 
                       <circle cx="80" cy="80" r="4" fill="currentColor" opacity="0.6" />
                     </svg>
 
-                    <p className="font-serif text-2xl md:text-3xl font-light text-white mb-2 relative z-10">
+                    <p className="font-serif text-3xl md:text-4xl font-light text-white mb-3 relative z-10">
                       {r.store}
                     </p>
 
                     {r.description && (
-                      <p className="text-sm text-white/50 font-sans leading-relaxed mb-6 relative z-10">
+                      <p className="font-serif italic text-base text-white/65 leading-relaxed mb-8 relative z-10">
                         {r.description}
                       </p>
                     )}
@@ -301,12 +353,20 @@ export default async function RegistryPage({ params }: { params: { slug: string 
         </section>
       )}
 
-      {/* ── Closing ornament ─────────────────────────────────────────────── */}
-      <section className="py-16 px-6">
+      {/* ── Closing ornament — paired botanicals ─────────────────────────── */}
+      <section className="py-20 px-6">
         <div className="max-w-2xl mx-auto">
-          <FadeIn direction="up">
-            <div className="flex flex-col items-center gap-8">
-              <BotanicalOrnament className="w-24 text-gold/25" />
+          <FadeIn direction="up" delay={0.1}>
+            <div className="flex flex-col items-center gap-10">
+              <div className="flex items-center gap-8">
+                <BotanicalOrnament className="w-20 text-gold/20 [transform:scaleX(-1)]" />
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-gold/30 text-[8px]">◆</span>
+                  <div className="w-px h-8" style={{ background: "rgb(var(--w-gold) / 0.15)" }} />
+                  <span className="text-gold/30 text-[8px]">◆</span>
+                </div>
+                <BotanicalOrnament className="w-20 text-gold/20" />
+              </div>
               <Divider diamond />
             </div>
           </FadeIn>
